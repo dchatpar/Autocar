@@ -1,5 +1,3 @@
-"use client";
-
 import type { CampaignFormData, CampaignStepInput } from "@/types/api";
 
 export { CAMPAIGN_INITIAL };

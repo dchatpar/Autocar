@@ -35,7 +35,7 @@ import {
   campaignKeys,
 } from "@/hooks/useCampaigns";
 import type { CampaignTriggerType, CampaignStepInput } from "@/types/api";
-import { CAMPAIGN_INITIAL, type CampaignFormData } from "../new/campaign-data";
+import { CAMPAIGN_INITIAL, type CampaignFormData } from "../../new/campaign-data";
 
 /* ------------------------------------------------------------------ */
 /* Per-step validation schemas (mirror new/page.tsx)                   */
