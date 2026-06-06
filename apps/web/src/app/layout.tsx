@@ -49,12 +49,13 @@ export default function RootLayout({
       <body
         className={`${dmSans.variable} ${jetbrainsMono.variable} font-sans antialiased bg-primary text-primary`}
       >
-        <QueryProvider>
-          <RealtimeBridge>
-            <Shell>{children}</Shell>
-          </RealtimeBridge>
-        </QueryProvider>
-        <ToastProvider />
+        <ToastProvider>
+          <QueryProvider>
+            <RealtimeBridge>
+              <Shell>{children}</Shell>
+            </RealtimeBridge>
+          </QueryProvider>
+        </ToastProvider>
       </body>
     </html>
   )

@@ -408,7 +408,7 @@ function ChecklistItem({
   return (
     <label
       aria-label={label}
-      htmlFor={`disclaimer-${index}`}
+      htmlFor={`disclaimer-${label.toLowerCase().replace(/\s+/g, '-')}`}
       className={cn(
         "flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors",
         checked
@@ -417,7 +417,7 @@ function ChecklistItem({
       )}
     >
       <input
-        id={`disclaimer-${index}`}
+        id={`disclaimer-${label.toLowerCase().replace(/\s+/g, '-')}`}
         type="checkbox"
         checked={checked}
         onChange={(e) => onChange(e.target.checked)}
@@ -538,7 +538,7 @@ function ReminderToggle({
   return (
     <label
       aria-label={label}
-      htmlFor={`vehicle-condition-${index}`}
+      htmlFor={`vehicle-condition-${label.toLowerCase().replace(/\s+/g, '-')}`}
       className={cn(
         "flex items-start gap-3 p-3 rounded-lg border cursor-pointer",
         checked
@@ -547,7 +547,7 @@ function ReminderToggle({
       )}
     >
       <input
-        id={`vehicle-condition-${index}`}
+        id={`vehicle-condition-${label.toLowerCase().replace(/\s+/g, '-')}`}
         type="checkbox"
         checked={checked}
         onChange={(e) => onChange(e.target.checked)}

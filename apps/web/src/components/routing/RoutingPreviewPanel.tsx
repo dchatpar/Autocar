@@ -51,12 +51,11 @@ export function RoutingPreviewPanel() {
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        <label htmlFor="routing-lead-source" className="text-xs font-medium text-text-muted uppercase tracking-wide">
+        <label className="text-xs font-medium text-text-muted uppercase tracking-wide">
           Simulate an incoming lead
         </label>
         <div className="grid grid-cols-1 sm:grid-cols-[1fr_2fr_120px_auto] gap-2">
           <Select
-            id="routing-lead-source"
             options={SAMPLE_SOURCES}
             value={source}
             onChange={setSource}
