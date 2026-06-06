@@ -10,7 +10,7 @@
 import { useMemo } from "react";
 import { Circle, CircleDot, CircleSlash, UserCheck } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { Badge } from "@/components/ui/badge";
 import {
   useRepsWithAvailability,

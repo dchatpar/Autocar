@@ -36,7 +36,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { DuplicateCompare } from "@/components/customers/DuplicateCompare";
 import { DuplicateBadge } from "@/components/customers/DuplicateBadge";
 import { useDismissDuplicate, useMergeCustomers, useDuplicateList, type DuplicateListItem, type DuplicateListFilters } from "@/hooks/useDuplicateDetection";

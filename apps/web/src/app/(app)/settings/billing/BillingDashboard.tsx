@@ -29,7 +29,7 @@ import {
   useUsage,
   statusLabel,
 } from "@/hooks/useBilling";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { AlertCircle, CreditCard, ExternalLink } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import type { SubscriptionPlan } from "@/types/api";

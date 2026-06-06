@@ -20,7 +20,7 @@ import {
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { useCustomer, useAddCustomerNote } from "@/hooks/useCustomers";
 import { cn, formatCurrency, formatDate, formatDistanceToNow, formatPhone } from "@/lib/utils";
 import type { CreditTier, CustomerTimelineEvent } from "@/types/api";

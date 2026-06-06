@@ -6,7 +6,7 @@ import { LayoutGrid, List, Plus, AlertCircle, RefreshCw, Search } from "lucide-r
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { VehicleGrid } from "./VehicleGrid";
 import { VehicleTable } from "./VehicleTable";
 import { VinDecoderModal } from "./VinDecoderModal";

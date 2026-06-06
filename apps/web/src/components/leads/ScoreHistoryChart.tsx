@@ -26,7 +26,7 @@ import {
   type TooltipProps,
 } from "recharts";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { ScoreBadge, type Classification } from "./ScoreBadge";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 

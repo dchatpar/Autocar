@@ -12,7 +12,7 @@ import { useState } from "react";
 import { AlertCircle, ChevronDown, Clock, ArrowDownUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar } from "@/components/ui/avatar";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { Select } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { useRoutingLog } from "@/hooks/useRoutingLog";

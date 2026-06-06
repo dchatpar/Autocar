@@ -22,7 +22,7 @@ import { PageContainer, PageHeader } from "@/components/layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { ActivityTimeline } from "@/components/activity/ActivityTimeline";
 import { AnomalyBadge, AnomalyDot } from "@/components/activity/AnomalyBadge";
 import { EmptyState } from "@/components/common/EmptyState";

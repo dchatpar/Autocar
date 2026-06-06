@@ -34,7 +34,7 @@ import {
 } from "lucide-react";
 import type { Notification, NotificationType } from "@/hooks/useNotifications";
 import { cn, formatDistanceToNow } from "@/lib/utils";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@/components/ui/Skeleton";
 
 interface NotificationListProps {
   items: Notification[];

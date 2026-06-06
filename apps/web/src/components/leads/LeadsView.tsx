@@ -6,7 +6,7 @@ import { LayoutGrid, List, Plus, AlertCircle, RefreshCw, Flame, Sun, Snowflake }
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { LeadKanban } from "./LeadKanban";
 import { LeadTable } from "./LeadTable";
 import { useLeads, useUpdateLeadStatus, useLocalLeads } from "@/hooks/useLeads";

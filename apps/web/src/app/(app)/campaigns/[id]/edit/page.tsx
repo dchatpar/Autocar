@@ -22,7 +22,7 @@ import { useWizardValidation } from "@/hooks/useWizardValidation";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/common/EmptyState";
 
 import { TriggerPicker } from "@/components/campaigns/TriggerPicker";

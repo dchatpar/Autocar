@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { useCustomers } from "@/hooks/useCustomers";
 import { formatCurrency, formatDate, formatPhone } from "@/lib/utils";
 import type { CreditTier } from "@/types/api";

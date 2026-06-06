@@ -35,7 +35,7 @@ import { PageHeader } from "@/components/layout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { Tabs } from "@/components/ui/tabs";
 import { EmptyState } from "@/components/common/EmptyState";
 

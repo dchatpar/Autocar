@@ -21,7 +21,7 @@ import {
 } from "recharts";
 import { Users, Activity, CheckCircle2, XCircle, Mail, MessageSquare, TrendingUp } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { cn, formatNumber } from "@/lib/utils";
 import type { CampaignStats } from "@/types/api";
 
