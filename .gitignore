@@ -63,3 +63,5 @@ infra/terraform.tfvars
 *.temp
 .turbo/
 .cache/
+
+.vercel
