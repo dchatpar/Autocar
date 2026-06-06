@@ -190,7 +190,7 @@ export function PurchaseListView() {
           tone="accent"
         />
       ) : (
-        <ul className="space-y-2" role="list" aria-label="Purchase list">
+        <ul className="space-y-2" aria-label="Purchase list">
           {data?.map((p) => {
             return (
               <li key={p.id}>

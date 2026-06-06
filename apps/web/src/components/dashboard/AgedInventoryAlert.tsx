@@ -54,7 +54,7 @@ export function AgedInventoryAlert({ items, isLoading }: AgedInventoryAlertProps
         ) : items.length === 0 ? (
           <p className="text-sm text-text-muted py-6 text-center">No aged vehicles — nice turnover.</p>
         ) : (
-          <ul className="space-y-2" role="list">
+          <ul className="space-y-2">
             {items.map((item) => (
               <li
                 key={item.id}

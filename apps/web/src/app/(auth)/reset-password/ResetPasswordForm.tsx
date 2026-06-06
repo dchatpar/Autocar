@@ -153,7 +153,6 @@ export function ResetPasswordForm({ searchParamsPromise }: ResetPasswordFormProp
                   error={errors.password?.message}
                   disabled={isPending}
                   required
-                  autoFocus
                 />
                 {passwordValue.length > 0 && (
                   <div className="mt-2 flex items-center gap-2" aria-hidden="true">

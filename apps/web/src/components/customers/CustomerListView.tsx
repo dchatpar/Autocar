@@ -115,7 +115,7 @@ export function CustomerListView() {
           <p className="text-text-muted">No customers match your filters.</p>
         </div>
       ) : (
-        <ul className="space-y-2" role="list" aria-label="Customer list">
+        <ul className="space-y-2" aria-label="Customer list">
           {customers?.map((c) => (
             <li key={c.id}>
               <Link

@@ -1,4 +1,3 @@
-// @ts-nocheck — AppShell type misinferred in Next.js App Router root layout context
 import type { Metadata } from "next"
 import React, { type ReactNode } from "react"
 import { DM_Sans, JetBrains_Mono } from "next/font/google"

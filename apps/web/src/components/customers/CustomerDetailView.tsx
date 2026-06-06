@@ -309,7 +309,7 @@ export function CustomerDetailView({ customerId }: CustomerDetailViewProps) {
               {customer.vehiclesOfInterest.length === 0 ? (
                 <p className="text-sm text-text-muted py-4 text-center">No vehicles saved.</p>
               ) : (
-                <ul className="space-y-2" role="list">
+                <ul className="space-y-2">
                   {customer.vehiclesOfInterest.map((v) => (
                     <li
                       key={v.id}
@@ -348,7 +348,7 @@ export function CustomerDetailView({ customerId }: CustomerDetailViewProps) {
                   <p className="text-sm text-text-muted">No open deals.</p>
                 </div>
               ) : (
-                <ul className="space-y-2" role="list">
+                <ul className="space-y-2">
                   {customer.deals.map((d) => (
                     <li
                       key={d.id}

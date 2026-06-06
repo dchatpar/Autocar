@@ -515,7 +515,6 @@ export function VehicleStep4Images({
               key={`${url}-${index}`}
               className="group relative aspect-[4/3] rounded-lg border border-border overflow-hidden bg-bg-elevated"
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={url}
                 alt={`Vehicle photo ${index + 1}`}

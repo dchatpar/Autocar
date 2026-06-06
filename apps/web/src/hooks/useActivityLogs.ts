@@ -305,7 +305,7 @@ export function useInfiniteActivityLogs(
     queryFn: async () => {
       const all: ActivityLogRecord[] = [];
       let cursor: string | undefined = undefined;
-      // eslint-disable-next-line no-constant-condition
+       
       while (true) {
         const page: PaginatedResult<ActivityLogRecord> = await fetchActivityLogs(
           filters,

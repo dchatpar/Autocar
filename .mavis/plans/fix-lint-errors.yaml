@@ -1,0 +1,52 @@
+﻿version: 1
+plan:
+  name: "fix-eslint-errors"
+  max_concurrency: 5
+  max_consecutive_failures: 2
+  max_cycles: 3
+tasks:
+  - id: fix-accessibility-errors
+    title: "fix jsx-a11y errors"
+    prompt: |
+      Fix ALL ESLint errors (not warnings) in the @dealeros/web source files.
+      
+      Run this first to get the current error list:
+      ```
+      cd apps\web ; cmd /c "pnpm eslint src --max-warnings 0 2>&1"
+      ```
+      
+      The errors to fix are in these categories (69 total errors):
+      1. `jsx-a11y/label-has-associated-control` — form labels without associated controls
+         Files: campaigns/[id]/edit/page.tsx:259, campaigns/new/page.tsx:235, campaigns/AudienceBuilder.tsx:125, (auth)/signup/SignupWizard.tsx:435
+      2. `jsx-a11y/no-redundant-roles` — redundant ARIA roles (e.g. `<ul role="list">`)
+         Files: (app)/page.tsx:94, customers/CustomerDetailView.tsx:312,351, customers/CustomerListView.tsx:118, customers/DuplicateCompare.tsx:236, customers/DuplicatesView.tsx:180, activity/ActivityTimeline.tsx:181
+      3. `jsx-a11y/no-autofocus` — remove autoFocus prop
+         Files: (auth)/forgot-password/ForgotPasswordForm.tsx:95, (auth)/reset-password/ResetPasswordForm.tsx:156
+      4. `jsx-a11y/click-events-have-key-events` — clickable elements need keyboard handler
+         Files: customers/DuplicateBadge.tsx:65
+      5. `@typescript-eslint/ban-ts-comment` — remove @ts-nocheck
+         Files: app/layout.tsx:1
+      
+      Fix rules:
+      - For `label-has-associated-control`: add `htmlFor` attribute to labels, or wrap inputs with labels
+      - For `no-redundant-roles`: remove `role="list"` from `<ul>` (it already has implicit list role)
+      - For `no-autofocus`: remove the `autoFocus` prop
+      - For `click-events-have-key-events`: add `onKeyDown` handler to the div/span
+      - For `ban-ts-comment`: remove the `// @ts-nocheck` line at the top of layout.tsx
+      
+      After fixing, run `pnpm eslint src --max-warnings 0` to verify errors are gone.
+      If there are remaining errors, fix those too until 0 errors remain.
+      
+      Working directory: C:\Users\dchat\.mavis\agents\mavis\workspace\Autocar\Autocar-main
+    assigned_to: coder
+    verify_skip_reason: "Dave requested skip verification for speed"
+  - id: verify-no-errors
+    title: "verify zero ESLint errors"
+    prompt: |
+      Run: `cd apps\web ; cmd /c "pnpm eslint src --max-warnings 0 2>&1"`
+      Count the errors reported. Report: "X errors remaining" (should be 0).
+      
+      If there are still errors, list them with file and line number.
+      Working directory: C:\Users\dchat\.mavis\agents\mavis\workspace\Autocar\Autocar-main
+    assigned_to: verifier
+    depends_on: [fix-accessibility-errors]

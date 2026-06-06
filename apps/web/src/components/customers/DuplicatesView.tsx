@@ -177,7 +177,7 @@ export function DuplicatesView() {
           }}
         />
       ) : (
-        <ul className="space-y-2" role="list" aria-label="Duplicate customer pairs">
+        <ul className="space-y-2" aria-label="Duplicate customer pairs">
           {items.map((pair) => (
             <li key={pair.id}>
               <PairRow

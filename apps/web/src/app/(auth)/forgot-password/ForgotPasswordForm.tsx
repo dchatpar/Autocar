@@ -92,7 +92,6 @@ export function ForgotPasswordForm() {
                 error={errors.email?.message}
                 disabled={isPending}
                 required
-                autoFocus
               />
 
               <Button

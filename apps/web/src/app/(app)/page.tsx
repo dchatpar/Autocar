@@ -91,7 +91,7 @@ export default async function HomePage() {
             <CardDescription>Latest leads requiring attention</CardDescription>
           </CardHeader>
           <CardContent>
-            <ul className="space-y-3" role="list">
+            <ul className="space-y-3">
               {recentLeads.map((lead) => (
                 <li
                   key={lead.id}

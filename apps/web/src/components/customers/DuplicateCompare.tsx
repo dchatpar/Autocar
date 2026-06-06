@@ -233,7 +233,7 @@ export function DuplicateCompare({
             <div className="px-3 py-2 text-center">Pick</div>
             <div className="px-3 py-2 font-semibold">Record B · duplicate</div>
           </div>
-          <ul role="list" className="divide-y divide-border">
+          <ul className="divide-y divide-border">
             {FIELD_ROWS.map((row) => {
               const aVal = valueOf(recordA, row.field);
               const bVal = valueOf(recordB, row.field);

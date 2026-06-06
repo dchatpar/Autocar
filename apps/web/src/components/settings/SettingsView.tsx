@@ -106,9 +106,9 @@ export function SettingsView() {
                   >
                     {/* Logo placeholder */}
                     <div>
-                      <label className="text-sm font-medium text-text-primary block mb-1.5">
+                      <span className="text-sm font-medium text-text-primary block mb-1.5">
                         Logo
-                      </label>
+                      </span>
                       <div className="flex items-center gap-4">
                         <div
                           className="h-16 w-16 rounded-xl bg-accent flex items-center justify-center text-bg-primary text-2xl font-bold"
@@ -218,7 +218,7 @@ export function SettingsView() {
                 <CardDescription>Everyone with access to this dealership</CardDescription>
               </CardHeader>
               <CardContent>
-                <ul className="space-y-2" role="list" aria-label="Team members">
+                <ul className="space-y-2" aria-label="Team members">
                   {USERS.map((u) => (
                     <li
                       key={u.id}
@@ -266,7 +266,7 @@ export function SettingsView() {
                 <CardDescription>When customers can reach you</CardDescription>
               </CardHeader>
               <CardContent>
-                <ul className="space-y-2" role="list">
+                <ul className="space-y-2">
                   {hours.map((h, idx) => (
                     <li
                       key={h.day}

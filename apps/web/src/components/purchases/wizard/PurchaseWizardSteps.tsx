@@ -457,6 +457,8 @@ export function PurchaseStep4Docs({
           return (
             <label
               key={d.key}
+              aria-label={d.label}
+              htmlFor={`purchase-doc-${d.key}`}
               className={cn(
                 "flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors",
                 checked
@@ -465,6 +467,7 @@ export function PurchaseStep4Docs({
               )}
             >
               <input
+                id={`purchase-doc-${d.key}`}
                 type="checkbox"
                 checked={checked}
                 onChange={(e) => update({ [d.key]: e.target.checked } as Partial<PurchaseFormData>)}

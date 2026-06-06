@@ -757,8 +757,9 @@ export function DealStep5Review({
         />
       </div>
 
-      <label className="flex items-start gap-3 p-3 rounded-lg border border-border bg-bg-elevated/30 cursor-pointer">
+      <label htmlFor="deal-confirmed" aria-label="I confirm the deal is accurate" className="flex items-start gap-3 p-3 rounded-lg border border-border bg-bg-elevated/30 cursor-pointer">
         <input
+          id="deal-confirmed"
           type="checkbox"
           checked={confirmed}
           onChange={(e) => setConfirmed(e.target.checked)}

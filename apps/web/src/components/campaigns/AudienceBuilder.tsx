@@ -122,8 +122,9 @@ export function AudienceBuilder({ value, onChange, errors }: AudienceBuilderProp
           <h4 className="text-sm font-semibold text-text-primary">Enrollment options</h4>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <label className="flex items-center gap-3 p-3 rounded-lg border border-border cursor-pointer hover:border-border-active transition-colors">
+          <label htmlFor="enrollment-customers" aria-label="Include existing customers in this campaign" className="flex items-center gap-3 p-3 rounded-lg border border-border cursor-pointer hover:border-border-active transition-colors">
             <input
+              id="enrollment-customers"
               type="checkbox"
               checked={value.includeCustomers !== false}
               onChange={(e) =>

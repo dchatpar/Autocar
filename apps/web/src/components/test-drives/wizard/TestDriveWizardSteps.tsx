@@ -407,6 +407,8 @@ function ChecklistItem({
 }) {
   return (
     <label
+      aria-label={label}
+      htmlFor={`disclaimer-${index}`}
       className={cn(
         "flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors",
         checked
@@ -415,6 +417,7 @@ function ChecklistItem({
       )}
     >
       <input
+        id={`disclaimer-${index}`}
         type="checkbox"
         checked={checked}
         onChange={(e) => onChange(e.target.checked)}
@@ -534,6 +537,8 @@ function ReminderToggle({
 }) {
   return (
     <label
+      aria-label={label}
+      htmlFor={`vehicle-condition-${index}`}
       className={cn(
         "flex items-start gap-3 p-3 rounded-lg border cursor-pointer",
         checked
@@ -542,6 +547,7 @@ function ReminderToggle({
       )}
     >
       <input
+        id={`vehicle-condition-${index}`}
         type="checkbox"
         checked={checked}
         onChange={(e) => onChange(e.target.checked)}

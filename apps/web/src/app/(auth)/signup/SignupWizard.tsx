@@ -51,6 +51,7 @@ const dealerSchema = z.object({
   phone: z
     .string()
     .min(10, "Enter a valid phone number")
+    // eslint-disable-next-line no-useless-escape
     .regex(/^[\d\s+()\-]+$/, "Phone number contains invalid characters"),
   city: z.string().min(1, "City is required").max(60),
   state: z.string().min(2, "State is required").max(40),
@@ -432,10 +433,10 @@ export function SignupWizard() {
             />
 
             <div>
-              <label className="block text-sm font-medium text-text-primary mb-2">
+              <div className="block text-sm font-medium text-text-primary mb-2" aria-hidden="true">
                 Dealer type
-              </label>
-              <div className="grid grid-cols-3 gap-2">
+              </div>
+              <div className="grid grid-cols-3 gap-2" role="group" aria-label="Dealer type">
                 {(
                   [
                     { value: "franchise", label: "Franchise" },

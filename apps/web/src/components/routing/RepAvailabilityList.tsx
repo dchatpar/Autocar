@@ -69,7 +69,7 @@ export function RepAvailabilityList() {
   }
 
   return (
-    <ul className="space-y-2" role="list">
+    <ul className="space-y-2">
       {reps.map((rep) => {
         const current = availabilityById[rep.id] ?? rep.availability;
         return (

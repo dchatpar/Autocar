@@ -179,7 +179,6 @@ export function ActivityTimeline({
 
   return (
     <section
-      role="region"
       aria-label="Activity timeline"
       className={cn("flex flex-col gap-3", className)}
     >

@@ -231,12 +231,13 @@ function Step1Name({ data, update, errors }: { data: CampaignFormData; update: (
         helperText="Visible in the campaigns list. Use a clear, searchable name."
         required
       />
-      <div>
-        <label className="text-sm font-medium text-text-primary">
-          Description (optional)
-        </label>
-        <textarea
-          value={data.description}
+        <div>
+          <label htmlFor="campaign-description" className="text-sm font-medium text-text-primary">
+            Description (optional)
+          </label>
+          <textarea
+            id="campaign-description"
+            value={data.description}
           onChange={(e) => update({ description: e.target.value })}
           rows={4}
           maxLength={2000}
