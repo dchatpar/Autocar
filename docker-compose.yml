@@ -1,0 +1,176 @@
+version: "3.9"
+
+services:
+  # PostgreSQL 16 with pgvector extension
+  postgres:
+    image: postgres:16-alpine
+    container_name: dealeros-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: dealeros
+      POSTGRES_PASSWORD: dealeros_dev_password
+      POSTGRES_DB: dealeros
+      POSTGRES_INITDB_ARGS: "-c shared_preload_libraries=vector"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./initscripts:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dealeros -d dealeros"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - dealeros-network
+
+  # Redis 7
+  redis:
+    image: redis:7-alpine
+    container_name: dealeros-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - dealeros-network
+
+  # Fastify API
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile.dev
+    container_name: dealeros-api
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://dealeros:dealeros_dev_password@postgres:5432/dealeros
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:-dev-jwt-secret-change-in-production}
+      API_PORT: 3001
+      CORS_ORIGIN: http://localhost:3000
+    volumes:
+      - ./apps/api:/app
+      - /app/node_modules
+      - /app/dist
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - dealeros-network
+
+  # Next.js 15 Web App
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile.dev
+    container_name: dealeros-web
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      NEXT_PUBLIC_API_URL: http://localhost:3001
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+    volumes:
+      - ./apps/web:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      - api
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - dealeros-network
+
+  # Hasura Console
+  hasura:
+    image: hasura/graphql-engine:v2.41.0.cli-migrations-v3
+    container_name: dealeros-hasura
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      HASURA_GRAPHQL_DATABASE_URL: postgresql://dealeros:dealeros_dev_password@postgres:5432/dealeros
+      HASURA_GRAPHQL_ENABLE_CONSOLE: "true"
+      HASURA_GRAPHQL_DEV_MODE: "true"
+      HASURA_GRAPHQL_ENABLED_LOG_TYPES: startup,http-log,webhook-log,websocket-log,query-log
+      HASURA_GRAPHQL_ADMIN_SECRET: hasura_dev_secret
+      HASURA_GRAPHQL_JWT_SECRET: '{"type":"HS256", "key": "hasura-jwt-secret-change-in-production"}'
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - hasura_metadata:/hasura-metadata
+    networks:
+      - dealeros-network
+
+  # MinIO (S3 emulation)
+  minio:
+    image: minio/minio:latest
+    container_name: dealeros-minio
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: dealeros_minio
+      MINIO_ROOT_PASSWORD: dealeros_minio_password
+      MINIO_SITE_NAME: dealeros
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - dealeros-network
+
+  # MinIO Client (for bucket setup)
+  minio-setup:
+    image: minio/mc:latest
+    container_name: dealeros-minio-setup
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      sleep 5;
+      mc alias set local http://minio:9000 dealeros_minio dealeros_minio_password;
+      mc mb local/dealeros-media --ignore-existing;
+      mc anonymous set download local/dealeros-media;
+      echo 'MinIO setup complete';
+      exit 0;
+      "
+    networks:
+      - dealeros-network
+
+volumes:
+  postgres_data:
+  redis_data:
+  hasura_metadata:
+  minio_data:
+
+networks:
+  dealeros-network:
+    driver: bridge

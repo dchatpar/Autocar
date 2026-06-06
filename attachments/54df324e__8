@@ -1,0 +1,2394 @@
+yes resume the build but also consider this plan to make the app - DealerOS — Automotive Dealer SaaS CRM
+Complete Phase-by-Phase Build Plan
+Version: 1.0 | Author: Dhiraj Chatpar / AdaptUs Group Inc.
+Prepared: June 2026 | Build Duration: 12 Months | Target Launch: MVP @ Month 4
+
+
+Table of Contents
+Executive Summary
+Product Overview
+Market Analysis & Competitive Gaps
+System Architecture
+Tech Stack Reference
+Database Schema Design
+Integration Ecosystem
+AI Agent Architecture
+Phase 1 — Foundation (Months 1–2)
+Phase 2 — Core Product & MVP (Months 3–4)
+Phase 3 — Full Platform (Months 5–7)
+Phase 4 — Enterprise Tier (Months 8–10)
+Phase 5 — Market Dominance (Months 11–12)
+UI/UX Design System
+Feature Matrix
+Team Structure
+Infrastructure & Cost Model
+Pricing Strategy
+Security & Compliance
+Launch Strategy
+
+
+1. Executive Summary
+DealerOS is a next-generation, AI-native, multi-tenant SaaS platform for independent and franchise automotive dealerships. It replaces AutoBunny, VinSolutions, DealerSocket, CDK Elead, and ProMax simultaneously — with a unified agentic AI layer acting as a virtual BDC, finance desk, and operations manager running 24/7.
+
+Metric
+Target
+Total Build Cost (12 months)
+~$1.01M–$1.27M CAD
+MVP Launch
+Month 4
+Full Platform Launch
+Month 8
+Year 1 ARR Target
+$1.8M (150 dealers × avg $999/mo)
+Break-Even Point
+47 dealers at Pro $1,499/mo
+Primary Market
+Canadian independent dealers (30,000+ addressable)
+Secondary Market
+US independent dealers (60,000+ addressable)
+
+
+Why now: Incumbents are 20+ year-old monoliths. Zero have true agentic AI natively built in. The entire market is priced at $1,500–$5,000/mo with terrible UX. DealerOS ships at 60% of incumbent pricing with modern UI and 12 purpose-built AI agents.
+
+
+2. Product Overview
+Core Modules
+Module
+Description
+CRM & Lead Management
+Unified lead inbox, pipeline Kanban, AI scoring, automated sequences
+Inventory Management
+VIN decode, media, AI listing copy, bill of sale, window sticker
+Inventory Syndication
+AutoTrader, CarGurus, Kijiji, Facebook, Google — 8+ channels
+Deal Desking & F&I
+Payment scenarios, lender submission, e-contracting, F&I menu
+Buy Here Pay Here (BHPH)
+In-house financing, payment tracking, AI collections agent
+Analytics & Reporting
+ClickHouse-powered dashboards, custom report builder
+Dealer Website Builder
+White-label, responsive, inventory widget, SEO-optimized
+Mobile App (iOS + Android)
+VIN scanner, DL scanner, full CRM on mobile
+AI Agent Console
+12 autonomous agents, activity logs, performance metrics
+
+Target Customer Segments
+Segment A: Independent used car dealers (1–3 locations, 20–150 units in stock) — Primary
+Segment B: BHPH (Buy Here Pay Here) dealers needing in-house financing tools
+Segment C: Franchise dealer groups (4–15 rooftops) — Phase 4+
+Segment D: White-label resellers (dealer groups, DMSes, automotive vendors)
+
+
+3. Market Analysis & Competitive Gaps
+Competitor Pricing & Weakness Matrix
+Competitor
+Price/mo
+AI Level
+Key Weakness
+DealerOS Strategy
+AutoBunny
+$299–499
+None
+No AI, basic CRM, poor UX, no F&I
+Direct replacement
+VinSolutions
+$1,200–2,500
+Basic scoring
+Cox lock-in, expensive, complex onboarding
+Win on price + agents
+DealerSocket
+$1,500–3,000
+Limited
+Solera chaos, dated UI, no mobile-first
+Win on UX + agents
+CDK Elead
+$1,800–4,000
+Partial
+Data breach reputation, FTC issues, bloated
+Win on trust + speed
+DriveCentric
+$800–1,500
+Video AI
+No inventory syndication or BHPH
+Feature-complete win
+AutoRaptor
+$299–699
+Minimal
+No enterprise path, small dealer only
+Move upmarket
+ProMax
+$400–900
+Credit/compliance
+Niche BHPH focus, poor general CRM UX
+Beat with full suite
+Impel AI
+$600–1,200
+Agentic messaging
+Not a full CRM, AI overlay only
+Own the full stack
+
+Market Gaps DealerOS Owns
+No incumbent has true agentic AI (autonomous multi-step decision making) natively built in
+No platform offers WhatsApp + SMS + Email + Voice in a single unified AI agent
+Inventory syndication to all channels is always a bolt-on, never native
+BHPH with AI payment reminder + collections agents is entirely underserved
+Deal desking + F&I workspace for independent dealers under $1,000/mo doesn't exist
+VIN scanner + DL scanner mobile app with modern UX — only 2 competitors do it, both poorly
+AI-generated window stickers, bill of sale, and listing copy — zero incumbents offer this
+Canadian-market-first platform — PIPEDA/CASL compliant, provincial tax tables, Canadian Black Book, PBS DMS bridge
+
+
+4. System Architecture
+Architecture Overview
+┌─────────────────────────────────────────────────────────────┐
+
+│                      CLIENT LAYER                           │
+
+│  Next.js 15 Web App  │  React Native iOS  │  Android App    │
+
+└─────────────┬───────────────────┬─────────────────┬─────────┘
+
+              │                   │                 │
+
+              ▼                   ▼                 ▼
+
+┌─────────────────────────────────────────────────────────────┐
+
+│                    API GATEWAY (Kong)                       │
+
+│     JWT Auth  │  Rate Limiting  │  Webhook Fan-out         │
+
+│     GraphQL   │  REST Endpoints │  WebSocket Upgrade       │
+
+└─────────────────────┬───────────────────────────────────────┘
+
+                      │
+
+     ┌────────────────┼────────────────────────────┐
+
+     ▼                ▼                            ▼
+
+┌─────────┐   ┌──────────────┐          ┌──────────────────┐
+
+│  CRM    │   │  Inventory   │          │  AI Orchestrator │
+
+│ Service │   │  Service     │          │  (LangGraph)     │
+
+│(Node.js)│   │    (Go)      │          │   (Python)       │
+
+└────┬────┘   └──────┬───────┘          └────────┬─────────┘
+
+     │               │                           │
+
+     └───────────────┼───────────────────────────┘
+
+                     ▼
+
+┌─────────────────────────────────────────────────────────────┐
+
+│                       DATA LAYER                            │
+
+│  PostgreSQL 16  │  Redis 7  │  ClickHouse  │  Elasticsearch │
+
+│  (OLTP + RLS)   │  (Cache)  │  (Analytics) │  (VIN Search)  │
+
+│                    S3 + CloudFront (Media + Docs)           │
+
+└─────────────────────────────────────────────────────────────┘
+Architecture Principles
+Multi-tenant isolation: Row-level security (RLS) in PostgreSQL per dealer_id — no data leakage between tenants
+Event-driven: All cross-service communication via AWS EventBridge + SQS FIFO queues
+AI-first: Every module exposes tool-use APIs consumable by AI agents (LangGraph tools)
+Zero-downtime deploys: Blue/green deployments on Kubernetes (AWS EKS)
+Canadian data residency: AWS ca-central-1 primary, us-east-1 failover
+Observability: Distributed tracing (Datadog APM), structured JSON logs, RUM for dealer sessions
+Microservices Breakdown
+Service
+Language
+Responsibility
+crm-service
+Node.js + Fastify
+Leads, customers, activities, appointments, communications
+inventory-service
+Go
+VIN decode, inventory CRUD, media, pricing, feeds
+ai-orchestrator
+Python + FastAPI
+LangGraph agent runners, RAG, embedding pipelines
+messaging-service
+Node.js
+SMS, email, WhatsApp, push notification routing
+deals-service
+Node.js
+Deal desk, F&I, lender submissions, documents
+bhph-service
+Node.js
+Contracts, payments, collections, GPS
+reporting-service
+Python
+ClickHouse queries, report generation, scheduled exports
+billing-service
+Node.js
+Stripe subscriptions, usage metering, invoicing
+website-service
+Node.js
+Dealer website builder, inventory widget, SEO feeds
+
+
+
+5. Tech Stack Reference
+Frontend — Web
+Technology
+Version
+Rationale
+Next.js
+15 (App Router)
+RSC + streaming for dashboard performance; best-in-class SSR for dealer SEO websites
+TypeScript
+5.x
+End-to-end type safety across full stack
+TailwindCSS
+v4
+Utility-first, zero runtime overhead, design token system
+shadcn/ui + Radix
+Latest
+Accessible, composable, fully customizable — not a black box
+Zustand
+5.x
+Lightweight global state — no Redux boilerplate
+React Query (TanStack)
+v5
+Server state sync, optimistic updates, background refetching
+Recharts + Observable Plot
+Latest
+Flexible charting for analytics dashboards
+Framer Motion
+Latest
+Production-grade animations, page transitions, micro-interactions
+tRPC
+v11
+End-to-end type safety between Next.js and Node services
+
+Frontend — Mobile
+Technology
+Version
+Rationale
+React Native + Expo
+SDK 52
+Single codebase iOS/Android, OTA updates via Expo
+Vision Camera
+v4
+High-performance VIN barcode + DL scanner via native camera
+MMKV
+Latest
+10× faster than AsyncStorage for offline inventory cache
+Reanimated
+v3
+60fps animations for swipe gestures and deal cards
+Expo Router
+v4
+File-based routing for mobile screens
+
+Backend Services
+Technology
+Version
+Rationale
+Node.js + Fastify
+Node 22 LTS
+High-throughput API — 3× faster than Express for CRM endpoints
+Go
+1.23
+Inventory service — VIN decode and feed generation at sub-ms latency
+Python + FastAPI
+3.12
+AI agent orchestration, ML pipelines, reporting
+Hasura
+v3
+GraphQL engine with real-time subscriptions (live lead board)
+BullMQ + Redis
+Latest
+Job queues for email sequences, SMS drips, inventory sync crons
+Prisma
+v6
+ORM for Node.js services — type-safe PostgreSQL queries
+
+AI & Agents
+Technology
+Purpose
+LangGraph
+Stateful multi-agent orchestration — backbone of all AI workflows
+Claude Sonnet 4 (Anthropic)
+Primary reasoning LLM — best for CRM context, long conversations, tool use
+GPT-4o (OpenAI)
+Fallback + multimodal (VIN plate recognition, damage photo analysis)
+Retell AI
+Voice agent platform — inbound/outbound call handling infrastructure
+ElevenLabs
+Human-quality voice synthesis for AI agents
+pgvector
+Vector storage in PostgreSQL for customer history RAG
+Pinecone
+Dedicated vector DB for high-scale semantic inventory search
+Langfuse
+LLM observability — track agent costs, latency, quality per dealer
+
+Data Layer
+Technology
+Role
+PostgreSQL 16 (AWS RDS Multi-AZ)
+OLTP primary — multi-tenant with RLS, pgvector extension
+ClickHouse (AWS managed)
+Columnar OLAP — dealer analytics, query 1M rows in <100ms
+Redis 7 (AWS ElastiCache)
+Session cache, agent memory, rate limiting, pub/sub
+AWS S3 + CloudFront
+Vehicle photos, documents, generated PDFs at CDN scale
+Elasticsearch 8
+Full-text VIN + customer search with fuzzy matching
+
+DevOps & Infrastructure
+Technology
+Purpose
+AWS EKS (Kubernetes)
+Microservices orchestration — auto-scaling per dealer load
+Terraform
+IaC for all AWS resources — reproducible environments
+GitHub Actions
+CI/CD — automated testing, Playwright E2E, staging deploys
+Datadog
+Full-stack observability — APM, logs, RUM for dealer sessions
+HashiCorp Vault
+Secret management for dealer API keys and third-party credentials
+AWS WAF + Shield
+DDoS protection and web application firewall
+
+
+
+6. Database Schema Design
+Multi-Tenancy Strategy
+All tables include dealer_id UUID NOT NULL with PostgreSQL Row-Level Security (RLS) policies ensuring complete tenant isolation at the database level. Application-level tenant context is set via SET app.current_dealer_id = ? on connection pool checkout.
+Core Schema
+-- ============================================================
+
+-- TENANTS & AUTH
+
+-- ============================================================
+
+CREATE TABLE dealers (
+
+  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+  name           TEXT NOT NULL,
+
+  subdomain      TEXT UNIQUE NOT NULL,
+
+  plan           TEXT NOT NULL DEFAULT 'starter',  -- starter|growth|pro|enterprise
+
+  settings       JSONB DEFAULT '{}',
+
+  trial_ends_at  TIMESTAMPTZ,
+
+  created_at     TIMESTAMPTZ DEFAULT NOW()
+
+);
+
+CREATE TABLE users (
+
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+  dealer_id   UUID NOT NULL REFERENCES dealers(id) ON DELETE CASCADE,
+
+  email       TEXT UNIQUE NOT NULL,
+
+  name        TEXT NOT NULL,
+
+  role        TEXT NOT NULL,  -- admin|manager|sales|bdc|finance
+
+  phone       TEXT,
+
+  permissions JSONB DEFAULT '{}',
+
+  last_login  TIMESTAMPTZ,
+
+  created_at  TIMESTAMPTZ DEFAULT NOW()
+
+);
+
+-- ============================================================
+
+-- CRM
+
+-- ============================================================
+
+CREATE TABLE leads (
+
+  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+  dealer_id    UUID NOT NULL REFERENCES dealers(id),
+
+  source       TEXT NOT NULL,  -- autotrader|cargurus|website|walkin|phone|kijiji|facebook
+
+  status       TEXT NOT NULL DEFAULT 'new',  -- new|contacted|appointment|demo|deal|lost
+
+  score        INTEGER DEFAULT 0,  -- 0-100 AI propensity score
+
+  assigned_to  UUID REFERENCES users(id),
+
+  first_name   TEXT,
+
+  last_name    TEXT,
+
+  email        TEXT,
+
+  phone        TEXT,
+
+  vehicle_interest JSONB,  -- {make, model, year, budget, trade_in}
+
+  source_meta  JSONB,  -- raw payload from lead source
+
+  created_at   TIMESTAMPTZ DEFAULT NOW(),
+
+  updated_at   TIMESTAMPTZ DEFAULT NOW()
+
+);
+
+CREATE TABLE customers (
+
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+  dealer_id   UUID NOT NULL REFERENCES dealers(id),
+
+  first_name  TEXT NOT NULL,
+
+  last_name   TEXT NOT NULL,
+
+  email       TEXT,
+
+  phone       TEXT,
+
+  address     JSONB,  -- {street, city, province, postal}
+
+  dob         DATE,
+
+  credit_tier TEXT,  -- A|B|C|D|subprime
+
+  dl_number   TEXT,
+
+  dl_province TEXT,
+
+  notes       TEXT,
+
+  tags        TEXT[] DEFAULT '{}',
+
+  created_at  TIMESTAMPTZ DEFAULT NOW()
+
+);
+
+CREATE TABLE activities (
+
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+  dealer_id   UUID NOT NULL REFERENCES dealers(id),
+
+  entity_type TEXT NOT NULL,  -- lead|customer|deal|vehicle
+
+  entity_id   UUID NOT NULL,
+
+  type        TEXT NOT NULL,  -- call|email|sms|note|appointment|status_change|ai_action
+
+  body        TEXT,
+
+  metadata    JSONB DEFAULT '{}',
+
+  author_id   UUID REFERENCES users(id),  -- NULL = AI agent
+
+  agent_name  TEXT,  -- populated for AI actions
+
+  created_at  TIMESTAMPTZ DEFAULT NOW()
+
+);
+
+CREATE TABLE appointments (
+
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+  dealer_id   UUID NOT NULL REFERENCES dealers(id),
+
+  lead_id     UUID REFERENCES leads(id),
+
+  customer_id UUID REFERENCES customers(id),
+
+  assigned_to UUID REFERENCES users(id),
+
+  type        TEXT NOT NULL,  -- sales|test_drive|service|delivery
+
+  scheduled_at TIMESTAMPTZ NOT NULL,
+
+  duration_min INTEGER DEFAULT 60,
+
+  status      TEXT DEFAULT 'scheduled',  -- scheduled|confirmed|completed|noshow|cancelled
+
+  notes       TEXT,
+
+  calendar_event_id TEXT,  -- Google/Outlook external event ID
+
+  created_at  TIMESTAMPTZ DEFAULT NOW()
+
+);
+
+CREATE TABLE communications (
+
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+  dealer_id   UUID NOT NULL REFERENCES dealers(id),
+
+  lead_id     UUID REFERENCES leads(id),
+
+  customer_id UUID REFERENCES customers(id),
+
+  channel     TEXT NOT NULL,  -- sms|email|whatsapp|voice|webchat
+
+  direction   TEXT NOT NULL,  -- inbound|outbound
+
+  from_addr   TEXT,
+
+  to_addr     TEXT,
+
+  subject     TEXT,
+
+  body        TEXT,
+
+  media_urls  TEXT[] DEFAULT '{}',
+
+  status      TEXT DEFAULT 'delivered',
+
+  external_id TEXT,  -- Twilio/SendGrid message SID
+
+  ai_generated BOOLEAN DEFAULT false,
+
+  sent_at     TIMESTAMPTZ DEFAULT NOW()
+
+);
+
+-- ============================================================
+
+-- INVENTORY
+
+-- ============================================================
+
+CREATE TABLE vehicles (
+
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+  dealer_id   UUID NOT NULL REFERENCES dealers(id),
+
+  vin         TEXT NOT NULL,
+
+  make        TEXT NOT NULL,
+
+  model       TEXT NOT NULL,
+
+  year        INTEGER NOT NULL,
+
+  trim        TEXT,
+
+  body_style  TEXT,
+
+  mileage     INTEGER,
+
+  exterior_color TEXT,
+
+  interior_color TEXT,
+
+  fuel_type   TEXT,
+
+  transmission TEXT,
+
+  drivetrain  TEXT,
+
+  engine      TEXT,
+
+  condition   TEXT DEFAULT 'used',  -- new|used|certified
+
+  status      TEXT DEFAULT 'available',  -- available|sold|pending|wholesale|traded
+
+  stock_number TEXT,
+
+  notes       TEXT,
+
+  acquired_at DATE,
+
+  created_at  TIMESTAMPTZ DEFAULT NOW(),
+
+  UNIQUE(dealer_id, vin)
+
+);
+
+CREATE TABLE vehicle_pricing (
+
+  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+  vehicle_id   UUID NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
+
+  cost         NUMERIC(10,2),
+
+  asking_price NUMERIC(10,2),
+
+  internet_price NUMERIC(10,2),
+
+  market_value NUMERIC(10,2),
+
+  floor_plan   NUMERIC(10,2),
+
+  recon_cost   NUMERIC(10,2),
+
+  days_on_lot  INTEGER GENERATED ALWAYS AS (EXTRACT(DAY FROM NOW() - (SELECT acquired_at FROM vehicles WHERE id = vehicle_id))::INTEGER) STORED,
+
+  updated_at   TIMESTAMPTZ DEFAULT NOW()
+
+);
+
+CREATE TABLE vehicle_media (
+
+  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+  vehicle_id UUID NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
+
+  dealer_id  UUID NOT NULL REFERENCES dealers(id),
+
+  s3_key     TEXT NOT NULL,
+
+  cdn_url    TEXT NOT NULL,
+
+  type       TEXT DEFAULT 'photo',  -- photo|video|360
+
+  sort_order INTEGER DEFAULT 0,
+
+  ai_score   INTEGER,  -- 0-100 quality score from Vision agent
+
+  is_primary BOOLEAN DEFAULT false,
+
+  uploaded_at TIMESTAMPTZ DEFAULT NOW()
+
+);
+
+CREATE TABLE syndication_log (
+
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+  vehicle_id  UUID NOT NULL REFERENCES vehicles(id),
+
+  dealer_id   UUID NOT NULL REFERENCES dealers(id),
+
+  channel     TEXT NOT NULL,  -- autotrader|cargurus|kijiji|facebook|google|carpages
+
+  status      TEXT DEFAULT 'pending',  -- pending|active|error|paused|sold
+
+  external_id TEXT,
+
+  last_synced TIMESTAMPTZ,
+
+  error_msg   TEXT,
+
+  created_at  TIMESTAMPTZ DEFAULT NOW()
+
+);
+
+-- ============================================================
+
+-- DEALS & F&I
+
+-- ============================================================
+
+CREATE TABLE deals (
+
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+  dealer_id   UUID NOT NULL REFERENCES dealers(id),
+
+  customer_id UUID NOT NULL REFERENCES customers(id),
+
+  vehicle_id  UUID NOT NULL REFERENCES vehicles(id),
+
+  lead_id     UUID REFERENCES leads(id),
+
+  assigned_to UUID REFERENCES users(id),
+
+  status      TEXT DEFAULT 'working',  -- working|pending_finance|approved|delivered|unwound
+
+  deal_type   TEXT DEFAULT 'retail',  -- retail|lease|bhph|wholesale|cash
+
+  created_at  TIMESTAMPTZ DEFAULT NOW(),
+
+  delivered_at TIMESTAMPTZ
+
+);
+
+CREATE TABLE deal_terms (
+
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+  deal_id         UUID NOT NULL REFERENCES deals(id) ON DELETE CASCADE,
+
+  sale_price      NUMERIC(10,2),
+
+  trade_value     NUMERIC(10,2),
+
+  trade_payoff    NUMERIC(10,2),
+
+  down_payment    NUMERIC(10,2),
+
+  tax_amount      NUMERIC(10,2),
+
+  fee_total       NUMERIC(10,2),
+
+  financed_amount NUMERIC(10,2),
+
+  rate            NUMERIC(6,4),
+
+  term_months     INTEGER,
+
+  payment_amount  NUMERIC(10,2),
+
+  lender          TEXT,
+
+  front_gross     NUMERIC(10,2),
+
+  back_gross      NUMERIC(10,2)
+
+);
+
+CREATE TABLE fi_products (
+
+  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+  deal_id      UUID NOT NULL REFERENCES deals(id),
+
+  product_type TEXT NOT NULL,  -- warranty|gap|credit_insurance|tire_wheel|rust|paint
+
+  provider     TEXT,
+
+  cost         NUMERIC(10,2),
+
+  selling_price NUMERIC(10,2),
+
+  term_months  INTEGER,
+
+  deductible   NUMERIC(10,2)
+
+);
+
+CREATE TABLE documents (
+
+  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+  deal_id      UUID NOT NULL REFERENCES deals(id),
+
+  dealer_id    UUID NOT NULL REFERENCES dealers(id),
+
+  type         TEXT NOT NULL,  -- bill_of_sale|fi_contract|credit_app|disclosure|warranty
+
+  s3_key       TEXT NOT NULL,
+
+  docusign_id  TEXT,
+
+  signed_at    TIMESTAMPTZ,
+
+  signed_by    UUID REFERENCES users(id),
+
+  created_at   TIMESTAMPTZ DEFAULT NOW()
+
+);
+
+-- ============================================================
+
+-- BHPH (BUY HERE PAY HERE)
+
+-- ============================================================
+
+CREATE TABLE bhph_contracts (
+
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+  deal_id         UUID NOT NULL REFERENCES deals(id),
+
+  dealer_id       UUID NOT NULL REFERENCES dealers(id),
+
+  principal       NUMERIC(10,2) NOT NULL,
+
+  rate            NUMERIC(6,4) NOT NULL,
+
+  term_months     INTEGER NOT NULL,
+
+  payment_amount  NUMERIC(10,2) NOT NULL,
+
+  payment_day     INTEGER NOT NULL,  -- 1-28, day of month payment is due
+
+  first_payment   DATE NOT NULL,
+
+  maturity_date   DATE NOT NULL,
+
+  total_payments  INTEGER,
+
+  status          TEXT DEFAULT 'active'  -- active|paid_off|defaulted|repossessed
+
+);
+
+CREATE TABLE bhph_payments (
+
+  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+  contract_id  UUID NOT NULL REFERENCES bhph_contracts(id),
+
+  dealer_id    UUID NOT NULL REFERENCES dealers(id),
+
+  due_date     DATE NOT NULL,
+
+  paid_date    DATE,
+
+  amount_due   NUMERIC(10,2),
+
+  amount_paid  NUMERIC(10,2),
+
+  principal_portion NUMERIC(10,2),
+
+  interest_portion  NUMERIC(10,2),
+
+  balance_after NUMERIC(10,2),
+
+  method       TEXT,  -- cash|debit|credit|eft|money_order
+
+  status       TEXT DEFAULT 'pending'  -- pending|paid|late|partial|waived
+
+);
+
+-- ============================================================
+
+-- AI & ANALYTICS
+
+-- ============================================================
+
+CREATE TABLE lead_scores (
+
+  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+  lead_id      UUID NOT NULL REFERENCES leads(id) ON DELETE CASCADE,
+
+  score        INTEGER NOT NULL,
+
+  signals      JSONB,  -- {website_visits, email_opens, vdp_views, response_time_hrs, ...}
+
+  model_version TEXT,
+
+  scored_at    TIMESTAMPTZ DEFAULT NOW()
+
+);
+
+CREATE TABLE agent_runs (
+
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+  dealer_id   UUID REFERENCES dealers(id),
+
+  agent_name  TEXT NOT NULL,
+
+  entity_type TEXT,
+
+  entity_id   UUID,
+
+  input       JSONB,
+
+  output      JSONB,
+
+  tokens_in   INTEGER,
+
+  tokens_out  INTEGER,
+
+  cost_usd    NUMERIC(8,6),
+
+  duration_ms INTEGER,
+
+  status      TEXT DEFAULT 'success',  -- success|failed|human_override
+
+  created_at  TIMESTAMPTZ DEFAULT NOW()
+
+);
+
+CREATE TABLE embeddings (
+
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+  dealer_id   UUID REFERENCES dealers(id),
+
+  entity_type TEXT NOT NULL,  -- customer|lead|vehicle|communication
+
+  entity_id   UUID NOT NULL,
+
+  vector      vector(1536),  -- pgvector extension
+
+  model       TEXT DEFAULT 'text-embedding-3-small',
+
+  created_at  TIMESTAMPTZ DEFAULT NOW()
+
+);
+
+CREATE INDEX ON embeddings USING ivfflat (vector vector_cosine_ops) WITH (lists = 100);
+
+-- ClickHouse: analytics_events table (separate ClickHouse DDL)
+
+-- CREATE TABLE analytics_events (
+
+--   dealer_id   UUID,
+
+--   event_type  String,
+
+--   properties  String,  -- JSON
+
+--   user_id     UUID,
+
+--   session_id  String,
+
+--   ts          DateTime64(3)
+
+-- ) ENGINE = MergeTree() PARTITION BY toYYYYMM(ts) ORDER BY (dealer_id, ts)
+
+
+7. Integration Ecosystem
+Lead Sources
+Integration
+Method
+Priority
+AutoTrader Canada
+REST API
+Phase 2
+CarGurus
+Email parser + API
+Phase 2
+Kijiji Autos
+API feed
+Phase 2
+Facebook Marketplace
+Graph API OAuth
+Phase 2
+Cars.com
+ADF XML email parser
+Phase 3
+Carpages.ca
+XML feed
+Phase 3
+Dealer website forms
+Native webhooks
+Phase 1
+Phone (Twilio IVR)
+Twilio Webhooks
+Phase 2
+Walk-in QR check-in
+QR → mobile form
+Phase 3
+
+Inventory Syndication
+Channel
+Method
+Priority
+AutoTrader Canada API
+REST
+Phase 2
+AutoTrader US
+REST
+Phase 5
+CarGurus feed
+XML/JSON
+Phase 2
+Facebook Catalog
+FB Graph API
+Phase 2
+Google Vehicle Listings
+Merchant Center API
+Phase 3
+Kijiji Autos
+API
+Phase 2
+Carpages.ca
+XML
+Phase 3
+Craigslist
+Poster + scheduler
+Phase 3
+Custom XML feed
+Generic builder
+Phase 3
+
+Finance & Credit
+Integration
+Purpose
+Priority
+RouteOne
+Lender network submission
+Phase 3
+Dealertrack Canada
+F&I + lender submission
+Phase 3
+Equifax
+Credit bureau pull
+Phase 3
+TransUnion
+Credit bureau pull
+Phase 3
+Canadian Black Book
+Trade-in valuations
+Phase 2
+Black Book (US)
+Trade-in valuations (US)
+Phase 5
+Stripe
+DealerOS subscription billing
+Phase 1
+
+Communications
+Integration
+Purpose
+Priority
+Twilio
+SMS + voice calls
+Phase 2
+WhatsApp Business API
+WhatsApp messaging
+Phase 3
+SendGrid
+Transactional + bulk email
+Phase 1
+ElevenLabs
+AI voice synthesis
+Phase 3
+Retell AI
+Voice agent platform
+Phase 3
+Postmark
+Transactional email fallback
+Phase 2
+
+Documents & Identity
+Integration
+Purpose
+Priority
+DocuSign
+E-signatures for deals
+Phase 3
+HelloSign (Dropbox Sign)
+E-signature alternative
+Phase 3
+CARFAX Canada
+Vehicle history reports
+Phase 2
+AWS Textract
+Driver's license OCR
+Phase 2
+Google Vision API
+VIN plate recognition
+Phase 4
+
+DMS Bridges (Phase 4)
+DMS
+Region
+Method
+PBS Systems
+Canada
+API + CSV
+Reynolds & Reynolds ERA
+North America
+DMS Bridge API
+CDK Drive
+North America
+DMS Bridge
+Dealertrack DMS
+Canada/US
+API
+Auto/Mate
+US
+API
+
+
+
+8. AI Agent Architecture
+Agent Overview
+DealerOS ships with 12 purpose-built AI agents built on LangGraph. Every agent is designed to operate autonomously and expose tool-use APIs so it can be triggered by other agents, scheduled jobs, or dealer-configured rules.
+Agent Registry
+
+NOVA — Lead Response Agent
+Role: First-responder for every inbound lead, 24/7
+Trigger: New lead created (any source)
+Tech Stack: LangGraph + Claude Sonnet 4 + Twilio SMS + SendGrid
+Impact: Close rate +22% from instant response
+
+Workflow:
+
+Lead received → NOVA activates within 30 seconds
+Sends personalized intro message (channel: SMS or email based on source)
+Asks qualifying questions: vehicle interest, budget, timeline, trade-in
+Scores lead and updates CRM
+If appointment intent detected → triggers SYNC for scheduling
+Generates briefing note for assigned sales rep with full conversation context
+If no response in 2 hours → escalates to REVIVE sequence
+
+
+ARIA — AI Voice BDC Agent
+Role: Human-quality inbound + outbound voice calls
+Tech Stack: Retell AI + ElevenLabs + LangGraph + Twilio
+Impact: Replaces 2–3 BDC headcount
+
+Use Cases:
+
+Appointment confirmation calls (D-1)
+Appointment cancellation recovery
+No-show follow-up calls
+BHPH past-due collections calls
+Outbound re-engagement calls for 30/60/90-day dormant leads
+
+
+SYNC — Omnichannel Messaging Agent
+Role: Unified AI messaging across all channels
+Tech Stack: Claude Sonnet 4 + Twilio + WhatsApp Business API
+Impact: 3× engagement vs manual follow-up
+
+Capabilities:
+
+Maintains full conversation context across SMS → WhatsApp → email switches
+Detects sentiment shifts (frustration, urgency, buying signals)
+Auto-escalates hot leads to human rep with real-time Slack alert
+CASL/TCPA opt-out detection and enforcement
+
+
+SCORE — Predictive Lead Scorer
+Role: Real-time ML propensity-to-buy scoring
+Tech Stack: Python ML + ClickHouse feature store + pgvector
+Impact: 20% reduction in wasted rep time
+
+Signals (60+ features):
+
+Website VDP views (count, recency, depth)
+Email open rate and click patterns
+Response time to messages
+Trade-in value relative to vehicle interest
+Credit inquiry recency
+Time-on-lot of vehicles they viewed
+Days since first contact
+
+
+VIN-GPT — Inventory Intelligence Agent
+Role: Auto-generate all inventory content and pricing insights
+Tech Stack: Claude Sonnet 4 + GPT-4o Vision + market pricing API
+Impact: 8 hours/week saved per inventory manager
+
+Capabilities:
+
+SEO-optimized listing copy generation per vehicle
+Window sticker PDF auto-generation with dealer branding
+Social media caption generation (Facebook, Instagram)
+Competitor price comparison (scraped market data)
+Markdown recommendations for aged inventory (30/60/90 days)
+Photo sequence optimization based on industry best practices
+
+
+DEAL — Deal Structuring Assistant
+Role: In-deal coaching and F&I optimization
+Tech Stack: Claude Sonnet 4 + RouteOne API + custom finance engine
+Impact: $300–500 avg gross improvement per deal
+
+Capabilities:
+
+Real-time payment scenario generation (multiple term/rate combos)
+Optimal lender identification for customer's credit tier
+F&I product recommendation based on customer demographics
+Gross protection coaching: "Reduce discount by $200 → still $350/mo"
+Deal approval workflow with GSM/GM notification
+
+
+REVIVE — Re-engagement Agent
+Role: Recover dormant and lost leads
+Tech Stack: LangGraph scheduled workflows + Claude + BullMQ
+Impact: 12–18% of lost leads recovered
+
+Triggers:
+
+Lead inactive 30 days → Sequence A (soft check-in)
+Lead inactive 60 days → Sequence B (new arrival match)
+Lead marked "lost" → Sequence C (60-day cool-off then win-back)
+Price drop on vehicle of interest → Instant re-engagement
+
+
+PULSE — Executive Insights Agent
+Role: Autonomous dealer performance reporting
+Tech Stack: Claude + ClickHouse + LangGraph reporting chain
+Impact: Replaces weekly manager reporting time
+
+Outputs:
+
+Weekly AI-written dealer performance narrative (PDF)
+Anomaly alerts: lead drop, close rate dip, aged inventory spike
+Monthly trend analysis with action recommendations
+Benchmark vs industry averages
+
+
+GUARD — Compliance & Documentation Agent
+Role: CASL/TCPA/PIPEDA compliance enforcement
+Tech Stack: Claude + rule engine + compliance database
+Impact: Zero compliance violations
+
+Functions:
+
+Monitors all outbound communications for opt-out violations
+Ensures commercial messages include mandatory unsubscribe links
+Flags missing consent records before new communication sequences
+Auto-generates compliant disclosure language for deals
+Audit trail for all consent changes
+
+
+TRADE — Trade-In Evaluation Agent
+Role: Conversational trade-in intake and valuation
+Tech Stack: Claude + CARFAX API + Canadian Black Book
+Impact: Eliminates 80% of appraiser back-and-forth
+
+Workflow:
+
+Customer enters trade-in via web form or chat
+TRADE collects VIN, mileage, condition, accident history conversationally
+Pulls CARFAX report + Canadian Black Book market comps
+Generates value estimate range with condition adjustment logic
+Delivers estimate to sales rep with negotiation coaching note
+
+
+VISION — Photo & Media Agent
+Role: Vehicle photo quality control and optimization
+Tech Stack: GPT-4o Vision + AWS Rekognition + Sharp.js
+Impact: VDP click-through rate +35% from optimized photos
+
+Capabilities:
+
+AI quality scoring for each uploaded photo (0–100)
+Automatic background removal and dealership-branded replacement
+Damage detection (dents, scratches, rust) flagged for reconditioning
+Photo sequence optimization (exterior → interior → engine → cargo)
+Rejects blurry, poorly lit, or duplicate photos with instant feedback
+
+
+WEB — Website Personalization Agent
+Role: Dynamic dealer website personalization per visitor
+Tech Stack: Claude + Next.js Edge middleware + customer identity graph
+Impact: Lead conversion rate +18% on website
+
+Capabilities:
+
+Surfaces relevant inventory based on browsing history (returning visitors)
+Adapts hero banner messaging based on traffic source (Google vs Facebook)
+Shows personalized CTA based on lead stage for returning contacts
+A/B test automation for landing pages
+
+
+Agent Interaction Map
+Inbound Lead
+
+    │
+
+    ▼
+
+NOVA (qualify + score) ──────► GUARD (compliance check)
+
+    │                               │
+
+    ▼                               ▼
+
+SYNC (multi-channel)         SCORE (propensity update)
+
+    │
+
+    ├──── (phone lead) ──► ARIA (voice follow-up)
+
+    │
+
+    ├──── (no response) ──► REVIVE (re-engagement)
+
+    │
+
+    ├──── (hot lead) ──► DEAL (desk assistance)
+
+    │                        │
+
+    │                        ▼
+
+    │                   TRADE (trade-in intake)
+
+    │
+
+    └──── (vehicle interest) ──► VIN-GPT (listing match)
+
+Background (always running):
+
+VISION     ← new vehicle photos uploaded
+
+PULSE      ← daily/weekly scheduled reporting
+
+WEB        ← every website visitor session
+
+REVIVE     ← 30/60/90-day dormant lead scan
+
+
+9. Phase 1 — Foundation (Months 1–2)
+Objectives
+Establish the core infrastructure, authentication system, database schema, and design system. No user-facing features shipped yet — this is the platform foundation everything else runs on.
+Sprint Breakdown
+Sprint 1 (Week 1–2): Project Setup & Infrastructure
+
+AWS account setup: EKS cluster, RDS PostgreSQL 16 (Multi-AZ), ElastiCache Redis, S3 buckets
+Terraform IaC for all infrastructure resources
+GitHub repository structure (monorepo with Turborepo)
+GitHub Actions CI/CD pipeline (lint → test → build → deploy staging)
+Domain configuration: app.dealeros.ca, api.dealeros.ca, *.dealeros.ca (subdomains for dealers)
+SSL certificates (AWS Certificate Manager)
+Datadog agent setup (APM, logs, infrastructure monitoring)
+Kong API Gateway configuration (JWT auth, rate limiting, routing rules)
+Development environment: Docker Compose for local stack
+
+Sprint 2 (Week 3–4): Auth & Multi-Tenancy
+
+PostgreSQL schema deployment (all tables from Section 6)
+Row-Level Security (RLS) policies for all tenant tables
+Auth service: JWT issuing, refresh tokens, OAuth2 (Google SSO)
+RBAC: roles (admin, manager, sales, bdc, finance) with permission matrix
+Dealer onboarding flow: account creation, subdomain setup, initial user invite
+User management CRUD (invite, deactivate, change role)
+Password reset + email verification flows
+Session management with Redis
+
+Sprint 3 (Week 5–6): Design System & Base UI
+
+Figma design system: color tokens, typography, spacing, component library
+Next.js 15 project scaffold with App Router, TailwindCSS v4, shadcn/ui
+Core layout: sidebar navigation, top bar, command palette (⌘K) skeleton
+Dark mode implementation (default) with light mode toggle
+Responsive breakpoints: desktop (1280+), tablet (768–1279), mobile (<768)
+Toast notification system, modal system, drawer/sheet components
+Loading states, skeleton screens, error boundaries
+Storybook setup for component documentation
+
+Sprint 4 (Week 7–8): Core APIs & Notification Framework
+
+CRM service scaffold (Fastify + Prisma + PostgreSQL)
+Inventory service scaffold (Go + PostgreSQL)
+tRPC router setup with end-to-end type safety
+SendGrid integration: transactional email templates (welcome, invite, reset)
+BullMQ job queue infrastructure with Redis backend
+File upload service: S3 multipart upload, presigned URLs, CloudFront CDN
+Basic dealer settings page (profile, branding, business hours)
+Health check endpoints for all services
+Phase 1 Deliverables
+Working multi-tenant auth system with RBAC
+Complete PostgreSQL schema deployed with RLS
+CI/CD pipeline to staging
+Design system in Figma + component library
+Infrastructure as code (Terraform) for full AWS stack
+Base Next.js app with auth, layout, and navigation
+Phase 1 Definition of Done
+All services pass health checks in staging
+Auth flow works end-to-end (signup → invite → login → logout)
+RLS verified: User A cannot query User B's dealer data under any condition
+CI pipeline runs in under 8 minutes
+Figma design system has 40+ documented components
+
+
+10. Phase 2 — Core Product & MVP (Months 3–4)
+Objectives
+Ship the core CRM, inventory management, and first AI agents. MVP launches at end of Month 4 — first paying dealers onboarded.
+Sprint Breakdown
+Sprint 5 (Week 9–10): CRM — Leads Module
+
+Lead CRUD API (create, read, update, delete, bulk update)
+Lead pipeline Kanban UI — drag-and-drop across stages
+Lead list/table view with column sorting, filtering, search
+Lead detail page: contact info, activity feed, communication history
+Manual lead creation form (walk-in, phone)
+Lead assignment (manual + round-robin engine)
+Lead source tracking with attribution metadata
+Quick action buttons: call, SMS, email, appointment, note
+Bulk actions: assign, change status, tag, archive
+AutoTrader lead email parser (ADF XML → lead record)
+CarGurus lead webhook integration
+Facebook Marketplace lead webhook integration
+
+Sprint 6 (Week 11–12): CRM — Customers & Activities
+
+Customer CRUD API and UI
+Customer 360 page: timeline, deals, communications, vehicles of interest
+Activity logging: calls, notes, emails, SMS (manual + auto from integrations)
+Appointment scheduling UI with calendar view (day/week/month)
+Google Calendar OAuth sync (bi-directional)
+Appointment reminders: SMS at T-24h and T-1h (BullMQ scheduled job)
+Lead-to-customer conversion workflow
+Duplicate detection engine (fuzzy match on name + phone + email)
+Customer merge tool
+Basic search across leads and customers (PostgreSQL full-text)
+
+Sprint 7 (Week 13–14): Inventory Module
+
+Vehicle CRUD API and UI
+VIN decoder integration (NHTSA VPIC API + aftermarket data enrichment)
+Inventory list: grid view (photos) + table view with sort/filter
+Vehicle detail page: specs, pricing, media, syndication status, leads interest
+Multi-photo upload: S3 presigned upload, drag-to-reorder, primary photo selection
+Stock number auto-generation
+Vehicle status workflow: Available → Pending → Sold
+Cost & pricing fields: purchase, recon, asking, internet price
+Days-on-lot calculation and display
+Aged inventory alerts (30/60/90 day email digest via BullMQ)
+Vehicle search (Elasticsearch integration)
+
+Sprint 8 (Week 15–16): Syndication & NOVA Agent + MVP Launch
+
+AutoTrader Canada API syndication (push inventory, update prices, mark sold)
+CarGurus inventory feed (XML/JSON push)
+Kijiji Autos API integration
+Facebook Catalog API (inventory feed sync)
+Syndication dashboard: per-channel status, error alerts, last sync timestamp
+NOVA lead response agent (LangGraph + Claude Sonnet 4 + Twilio SMS)
+SYNC basic messaging agent (SMS + email unification)
+Bill of sale PDF generator (PDFKit + dealer template)
+Window sticker PDF generator
+Basic analytics dashboard: leads today, appointments, inventory count, top sources
+Dealer onboarding wizard: 6-step setup flow
+MVP LAUNCH — First 5 beta dealers onboarded
+Phase 2 Deliverables
+Full CRM lead and customer management
+Inventory module with VIN decode and media management
+4-channel inventory syndication (AutoTrader, CarGurus, Kijiji, Facebook)
+NOVA AI lead response agent live
+SYNC omnichannel messaging agent live
+PDF document generation (bill of sale + window sticker)
+Basic analytics dashboard
+First paying dealers live on platform
+Phase 2 Definition of Done
+NOVA responds to new leads within 60 seconds (p95 latency)
+Inventory syncs to AutoTrader within 5 minutes of changes
+CRM supports 10,000 leads per dealer without pagination degradation
+PDF generation completes in under 3 seconds
+All beta dealer feedback captured and triaged
+
+
+11. Phase 3 — Full Platform (Months 5–7)
+Objectives
+Complete the full product vision: deal desking, F&I, voice agent, predictive scoring, advanced syndication, mobile app, dealer website builder, and full analytics suite.
+Sprint Breakdown
+Sprint 9–10 (Month 5): Deal Desking & F&I
+
+Deal creation workflow: attach customer + vehicle, set deal type
+Interactive deal desk UI: sale price, trade, down payment, taxes, fees
+Multi-scenario payment calculator (side-by-side term/rate comparison)
+Provincial/state tax table integration (GST/PST/HST per province)
+F&I product menu UI: add warranty, GAP, protection products with cost/sell
+RouteOne Canada lender submission API integration
+Dealertrack Canada integration
+Credit application form (linked to deal)
+DocuSign e-signature integration for all deal documents
+Deal approval workflow: sales rep → manager → GSM
+Deal jacket: document organizer with version history
+Front-end and back-end gross profit calculation per deal
+Gross per deal reporting widget
+
+Sprint 11–12 (Month 6): Voice Agent & AI Expansion
+
+ARIA voice BDC agent (Retell AI + ElevenLabs + LangGraph)
+Inbound call routing: Twilio IVR → ARIA for qualification
+Outbound call campaigns: appointment confirmations + no-show recovery
+Call recording storage and transcript (AWS Transcribe)
+Call log in customer/lead activity feed with AI summary
+SCORE predictive lead scoring ML model
+Lead score badge on all lead cards (0–100 with color indicator)
+Score history chart on lead detail page
+Score-based auto-routing: 80+ score → immediate rep notification
+VIN-GPT inventory intelligence agent
+AI listing copy generation button in vehicle editor
+Aged inventory markdown recommendation engine
+Competitor price comparison dashboard
+REVIVE re-engagement agent with 30/60/90-day sequences
+
+Sprint 13–14 (Month 7): Mobile App & Website Builder
+
+React Native app scaffold (Expo SDK 52 + Expo Router)
+Auth + session management (mobile)
+Lead inbox and pipeline Kanban (mobile)
+Customer lookup and activity feed (mobile)
+VIN scanner: Vision Camera barcode scan → inventory add
+Driver's license OCR: AWS Textract → customer form auto-fill
+Photo capture: camera → AI enhancement → S3 upload
+Push notifications: new leads, appointment reminders, deal approvals
+Offline mode with MMKV cache and sync-on-connect
+App Store (iOS) + Google Play (Android) submission
+Dealer website builder: Next.js-powered, white-label subdomains
+Inventory search widget (embeddable on dealer site)
+Finance application form integration
+Live chat widget (SYNC agent-powered)
+SEO: auto-generated meta tags, schema.org VehicleOffer markup per listing
+CARFAX report link integration on vehicle detail pages
+
+Sprint 15 (end of Month 7): Full Analytics Suite
+
+ClickHouse analytics pipeline (event tracking from all modules)
+Executive dashboard: KPIs, live lead feed, rep activity, deal status
+Lead source ROI: cost per lead, cost per sale by channel
+Sales rep performance leaderboard
+Inventory velocity: avg days-to-sale by make/model/year/price-range
+Custom report builder: drag-and-drop fields, filters, scheduled email
+PULSE executive insights agent: weekly AI narrative PDF report
+Google Analytics 4 + Google Ads conversion tracking integration
+Meta CAPI (Conversions API) integration for Facebook ad attribution
+Kijiji Autos + Carpages.ca syndication added
+Google Vehicle Listings (Merchant Center) feed integration
+Craigslist posting assistant with scheduling
+Phase 3 Deliverables
+Complete deal desking + F&I module
+Lender submission (RouteOne + Dealertrack)
+DocuSign e-contracting
+ARIA voice BDC agent
+SCORE predictive scoring
+VIN-GPT inventory intelligence
+REVIVE re-engagement agent
+iOS + Android mobile app (App Store listed)
+White-label dealer website builder
+Full ClickHouse analytics suite with custom report builder
+PULSE executive insights agent
+8-channel inventory syndication
+
+
+12. Phase 4 — Enterprise Tier (Months 8–10)
+Objectives
+Unlock the enterprise market: BHPH module, DMS bridges, multi-rooftop groups, remaining AI agents, and SOC 2 audit.
+Sprint Breakdown
+Sprint 16–17 (Month 8): BHPH Full Module
+
+BHPH contract creation and amortization schedule generator
+Payment calendar UI with upcoming/overdue payment heatmap
+Manual payment entry: cash, debit, credit, EFT, money order
+ACH/PAD (pre-authorized debit) integration (Stripe ACH + Canadian PAD)
+Automated SMS/email payment reminders (D-3, D-1, D-day via BullMQ)
+ARIA BHPH collections call agent (past-due outreach)
+Delinquency aging report: 0–30, 31–60, 61–90, 90+ days
+Portfolio analytics: total book value, collections rate, average days late
+Down payment receipt PDF generator
+GPS device integration (Spireon/PAX-100) for repo risk monitoring
+Starter interrupt device management log
+BHPH credit application with in-house underwriting worksheet
+
+Sprint 18–19 (Month 9): DMS Bridges & Multi-Rooftop
+
+PBS Systems DMS bridge (Canadian DMS — most common in BC, Alberta)
+Reynolds & Reynolds ERA integration (deal push, inventory pull)
+CDK Drive integration (vehicle inventory sync)
+Dealertrack DMS integration
+DMS sync dashboard: last sync status, error log, field mapping UI
+Multi-rooftop dealer group support: parent account + child rooftops
+Cross-rooftop inventory search and transfer
+Consolidated group-level reporting (roll-up dashboards)
+Role hierarchy: group admin → rooftop admin → manager → sales
+White-label reseller program: custom branding, logo, domain per client
+
+Sprint 20 (Month 10): Remaining Agents + SOC 2
+
+DEAL deal structuring AI assistant (integrated into desk UI)
+TRADE trade-in evaluation conversational agent
+GUARD compliance monitoring (CASL + TCPA + PIPEDA)
+VISION photo intelligence agent (quality score + damage detection)
+Langfuse observability integration for all agent runs
+AI Agent Console UI: activity log, performance metrics, cost tracking, override controls
+Agent configuration UI: enable/disable per dealer, set behavior rules
+SOC 2 Type II audit initiated (auditor: Vanta or Drata for compliance automation)
+Penetration testing (third-party)
+PIPEDA privacy policy compliance review
+Data retention and deletion automation (GDPR/PIPEDA erasure requests)
+Phase 4 Deliverables
+Full BHPH module (contracts, payments, AI collections)
+DMS bridges for 4 major platforms
+Multi-rooftop dealer group support
+All 12 AI agents deployed and operational
+AI Agent Console with full observability
+White-label reseller capability
+SOC 2 Type II audit in progress
+
+
+13. Phase 5 — Market Dominance (Months 11–12)
+Objectives
+US market launch, open API marketplace, Facebook/Google Ads management agent, enterprise SSO, and Series A preparation.
+Sprint Breakdown
+Sprint 21–22 (Month 11): Ads Agent + Open Platform
+
+WEB website personalization agent (Edge middleware + identity graph)
+Facebook Ads management agent: auto-create/optimize dynamic inventory ads
+Google Performance Max + Vehicle Ads automation agent
+Open REST API with developer documentation (Swagger/OpenAPI)
+Webhook marketplace: subscribe to any DealerOS event (lead.created, deal.delivered, etc.)
+Zapier integration (DealerOS as trigger + action app)
+Partner SDK for third-party integrations
+OEM incentive feed integration (manufacturer rebates auto-populated in deal desk)
+Enterprise SSO: SAML 2.0 + SCIM provisioning (for dealer groups using Okta/Azure AD)
+
+Sprint 23–24 (Month 12): US Launch + Series A Prep
+
+US market configuration: TCPA compliance, US lender integrations (RouteOne US, DT US)
+US state tax tables (all 50 states + territories)
+AutoTrader US inventory syndication
+Cars.com + CarsDirect integration
+US phone number provisioning (Twilio US numbers)
+SOC 2 Type II certification achieved
+US data residency option (AWS us-east-1 isolated tenants)
+Series A investor data room preparation
+Revenue metrics dashboard (MRR, churn, NPS, CAC, LTV)
+Customer success portal: onboarding checklists, video tutorials, help center
+Full platform penetration test and security audit
+Performance audit: Core Web Vitals <2.5s LCP, <100ms INP across all major pages
+Phase 5 Deliverables
+WEB personalization agent live
+Facebook + Google Ads automation agents
+Open API + Zapier + webhook marketplace
+Enterprise SSO (SAML + SCIM)
+US market fully operational
+SOC 2 Type II certification
+Series A fundraising materials + investor portal
+
+
+14. UI/UX Design System
+Design Philosophy
+Premium Automotive SaaS — dark-mode-first, data-dense, fast. Designed for dealers who spend 10-hour shifts in the platform. Every screen is optimized for speed of action: the fastest path from "new lead" to "appointment booked" is always 3 clicks or fewer.
+Design Principles
+Principle
+Implementation
+Dark Mode First
+Default dark theme for showroom environments; optional light mode
+Command Bar
+Global ⌘K palette — jump to any entity or action in <2 keystrokes; supports natural language
+Context Panel
+Right-side AI context panel on every entity page — NOVA briefing, call transcript, price rec
+Real-Time Live Board
+WebSocket-driven: leads appear, status changes, rep activity — no page refresh needed
+Mobile Responsive
+Every dashboard collapses to card view on mobile; manager approval in 2 taps
+Keyboard Navigation
+Full keyboard accessibility; power users never need mouse for core workflows
+
+Color Tokens
+--color-bg-primary:      #0A0C0F;   /* Page background */
+
+--color-bg-card:         #111318;   /* Card/panel background */
+
+--color-bg-elevated:     #1A1D24;   /* Dropdown/popover */
+
+--color-border:          #1E2229;   /* All borders */
+
+--color-text-primary:    #E2E8F0;   /* Body text */
+
+--color-text-muted:      #6B7280;   /* Labels, captions */
+
+--color-accent:          #E8FF47;   /* Primary CTA, badges */
+
+--color-success:         #22D3A0;   /* Active, confirmed, positive */
+
+--color-info:            #3B82F6;   /* Links, info, syndication */
+
+--color-warning:         #F97316;   /* Aged inventory, late payments */
+
+--color-danger:          #EF4444;   /* Errors, delinquent, lost */
+
+--color-ai:              #A855F7;   /* AI agent indicators */
+Typography
+/* Display / Headers */
+
+font-family: 'DM Sans', 'Manrope', system-ui, sans-serif;
+
+font-weight: 800; /* headings */
+
+font-weight: 700; /* subheadings */
+
+/* Body */
+
+font-family: 'DM Sans', system-ui, sans-serif;
+
+font-weight: 400; /* body */
+
+font-size: 14px;  /* base */
+
+/* Mono / Code / VIN */
+
+font-family: 'JetBrains Mono', 'Fira Code', monospace;
+
+font-size: 12px;
+Key Screens
+Screen
+Layout
+Key Components
+Dashboard Hub
+3-column
+KPI cards, live lead feed, ARIA call log, aged inventory alert
+Lead Pipeline
+Kanban + table toggle
+Drag-and-drop columns, AI score badge, source icon, quick-action row
+Customer 360
+Timeline + right panel
+Interaction timeline, interest vehicles, credit tier badge, AI summary
+Inventory Manager
+Photo grid + list toggle
+Photo card, price badge, syndication status dots, VIN-GPT button
+Deal Desk
+Split-panel
+Left: deal terms calculator. Right: scenario comparison + F&I menu
+BHPH Portal
+Dashboard + table
+Portfolio KPIs, delinquency heatmap, payment calendar, AI queue
+AI Agents Console
+Agent cards + log
+Per-agent status, run count, cost, success rate, activity stream
+Analytics Hub
+Tabbed dashboards
+Executive, Lead Sources, Inventory, Sales Reps, Campaigns
+
+Accessibility
+WCAG 2.1 AA compliance target
+All interactive elements keyboard accessible
+Screen reader labels on all icon-only buttons
+Color is never the sole indicator of status (always paired with icon or label)
+Focus indicators visible and high-contrast
+
+
+15. Feature Matrix
+Feature Availability by Plan
+Feature
+Starter ($499)
+Growth ($999)
+Pro ($1,499)
+Enterprise ($2,499)
+Users
+3
+10
+Unlimited
+Multi-rooftop
+CRM — Leads
+✅
+✅
+✅
+✅
+CRM — Customers
+✅
+✅
+✅
+✅
+Inventory Management
+✅
+✅
+✅
+✅
+Syndication Channels
+2
+6
+All (8+)
+All + custom
+NOVA Lead Agent
+✅
+✅
+✅
+✅
+SYNC Messaging
+SMS + Email
++ WhatsApp
++ All channels
+✅
+SCORE Lead Scoring
+Basic
+✅
+✅
+✅
+VIN-GPT Content
+—
+✅
+✅
+✅
+REVIVE Re-engagement
+—
+✅
+✅
+✅
+Deal Desk & F&I
+—
+✅
+✅
+✅
+E-contracting (DocuSign)
+—
+✅
+✅
+✅
+ARIA Voice Agent
+—
+Add-on
+✅
+✅
+DEAL AI Assistant
+—
+—
+✅
+✅
+TRADE Trade-in Agent
+—
+—
+✅
+✅
+VISION Photo AI
+—
+—
+✅
+✅
+PULSE Weekly Report
+—
+—
+✅
+✅
+GUARD Compliance
+—
+—
+✅
+✅
+BHPH Module
+—
+—
+✅
+✅
+Mobile App
+—
+—
+✅
+✅
+Dealer Website Builder
+—
+—
+✅
+✅
+Custom Report Builder
+—
+✅
+✅
+✅
+DMS Bridge
+—
+—
+—
+✅
+Multi-Rooftop
+—
+—
+—
+✅
+White-Label
+—
+—
+—
+✅
+Enterprise SSO
+—
+—
+—
+✅
+SLA (99.9% uptime)
+—
+—
+—
+✅
+
+
+
+16. Team Structure
+Core Build Team (8 People)
+Role
+Count
+Monthly Cost (CAD)
+Key Responsibilities
+Lead Architect / CTO
+1
+$12,000–15,000
+System design, AWS, Kubernetes, tech decisions, AI architecture
+Senior Full-Stack Dev (Next.js + Node)
+2
+$9,000–11,000 each
+Frontend + backend feature development
+AI/ML Engineer
+1
+$11,000–13,000
+LangGraph agents, Claude API, RAG, ML pipelines, ClickHouse
+React Native Mobile Dev
+1
+$8,000–10,000
+iOS + Android app, VIN/DL scanner, offline sync
+DevOps / Platform Engineer
+1
+$9,000–11,000
+AWS EKS, Terraform, CI/CD, Datadog, Vault, security
+UI/UX Designer
+1
+$7,000–9,000
+Figma design system, screen design, user research
+Backend Dev (Go — Inventory)
+1
+$9,000–11,000
+Go inventory service, Elasticsearch, feed parsers, VIN APIs
+
+RACI by Phase
+Deliverable
+Lead
+Accountable
+Consulted
+Infrastructure setup
+DevOps Eng
+Lead Architect
+All
+Database schema
+Lead Architect
+Full-Stack Dev
+AI/ML Eng
+CRM features
+Full-Stack Dev (×2)
+Lead Architect
+Designer
+AI agents
+AI/ML Engineer
+Lead Architect
+Full-Stack Dev
+Mobile app
+Mobile Dev
+Lead Architect
+Designer
+Inventory service
+Go Backend Dev
+Lead Architect
+Full-Stack Dev
+UI/UX design
+Designer
+Lead Architect
+All devs
+DevOps + CI/CD
+DevOps Eng
+Lead Architect
+Full-Stack Dev
+
+Hiring Priority Order
+Lead Architect / CTO (hire first — sets all technical direction)
+Senior Full-Stack Dev #1 (frontend-heavy — Next.js + design)
+DevOps Engineer (infrastructure before code)
+AI/ML Engineer (agents are core differentiator)
+Go Backend Dev (inventory service)
+Senior Full-Stack Dev #2 (backend-heavy)
+UI/UX Designer (design system by Week 3)
+React Native Mobile Dev (Phase 3 mobile build)
+
+
+17. Infrastructure & Cost Model
+Monthly Infrastructure Costs
+Service
+Monthly Range (CAD)
+Notes
+AWS EKS (3 node groups, auto-scaling)
+$1,200–2,000
+Scales with dealer count
+AWS RDS PostgreSQL Multi-AZ
+$600–900
+db.r6g.xlarge per env
+AWS ElastiCache Redis
+$200–350
+cache.r6g.large
+AWS S3 + CloudFront
+$150–300
+Media storage + CDN
+ClickHouse (AWS managed / Altinity)
+$300–500
+Analytics cluster
+Anthropic Claude API
+$800–2,000
+Scales with agent usage
+OpenAI API (fallback + Vision)
+$200–500
+GPT-4o Vision for photos
+Twilio (SMS + Voice)
+$500–1,500
+Usage-based; scales with dealer count
+Retell AI (voice agent infra)
+$600–1,200
+Per-minute voice agent calls
+ElevenLabs (voice synthesis)
+$330–660
+Character-based pricing
+SendGrid (email delivery)
+$200–400
+100K–500K emails/mo
+Datadog (full stack observability)
+$400–800
+APM + logs + RUM
+DocuSign (e-signatures)
+$300–500
+Per-envelope pricing
+Elasticsearch (AWS OpenSearch)
+$250–400
+Single-AZ search cluster
+HashiCorp Vault Cloud
+$100–200
+Secret management
+Third-party APIs (CARFAX, RouteOne, etc.)
+$800–1,500
+Fixed + usage-based
+Total Infrastructure
+$6,730–13,210
+
+
+
+Monthly Team Costs
+Line Item
+Monthly Range (CAD)
+Team payroll (8 people)
+$78,000–93,000
+Benefits + overhead (15%)
+$11,700–13,950
+Contractors / QA (occasional)
+$2,000–5,000
+Total Team
+$91,700–111,950
+
+Total Build Cost Summary
+Category
+12-Month Total (CAD)
+Team
+$1,100,400–$1,343,400
+Infrastructure
+$80,760–$158,520
+Software licenses + tools
+$15,000–25,000
+Design assets + fonts + third-party
+$5,000–10,000
+Legal (SOC 2, terms, privacy)
+$15,000–25,000
+Total
+$1,216,160–$1,561,920
+
+
+Note for AdaptUs context: With in-house talent and Netwit agent AI resources, the effective build cost can be reduced 30–40% — targeting ~$850K–$1.1M CAD by leveraging existing infrastructure, LMBA networks for beta dealers, and KumoMTA for email delivery.
+
+
+18. Pricing Strategy
+Plans
+Plan
+Price/mo
+Users
+Best For
+Starter
+$499/mo
+3 users
+Solo operators, small BHPH, test-drive tier
+Growth
+$999/mo
+10 users
+Active used car dealers, 1 location, 20–80 units
+Pro
+$1,499/mo
+Unlimited
+Full-feature dealers, BHPH, with mobile + website
+Enterprise
+$2,499/mo
+Multi-rooftop
+Dealer groups, DMS integration, white-label
+
+Add-Ons
+Add-On
+Price
+ARIA Voice Agent (Starter/Growth)
++$199/mo
+Additional website (Starter/Growth)
++$99/mo
+BHPH module only (Starter/Growth)
++$299/mo
+DMS Bridge (Pro)
++$399/mo
+White-label branding (Pro)
++$299/mo
+
+Unit Economics
+Metric
+Target
+Customer Acquisition Cost (CAC)
+<$1,200 CAD
+Average Contract Value (ACV)
+$13,200/yr (avg $1,100/mo)
+LTV (24-month target)
+$26,400
+LTV:CAC Ratio
+22×
+Gross Margin
+72% at steady state
+Month 12 ARR Target
+$1.8M (150 dealers)
+Month 24 ARR Target
+$7.2M (500 dealers)
+
+
+
+19. Security & Compliance
+Security Architecture
+Authentication: JWT (15-min access tokens) + rotating refresh tokens stored in httpOnly cookies
+Authorization: RBAC enforced at API gateway + service layer + database (RLS)
+Encryption at rest: AES-256 for all RDS, S3, and ElastiCache data
+Encryption in transit: TLS 1.3 enforced on all endpoints
+Secrets management: HashiCorp Vault for all API keys; zero secrets in environment variables
+Network isolation: All microservices in private subnets; only Kong gateway is public-facing
+WAF: AWS WAF rules for OWASP Top 10, rate limiting, IP reputation
+DDoS protection: AWS Shield Standard (upgrade to Advanced for Enterprise tier)
+Canadian Compliance
+Regulation
+Requirement
+Implementation
+PIPEDA
+Privacy law for personal information
+Privacy policy, consent logging, data erasure API
+CASL
+Anti-spam law for commercial messages
+GUARD agent, consent records, unsubscribe enforcement
+FINTRAC
+AML for vehicle transactions >$10K cash
+Deal flag + reporting workflow (Phase 4)
+Provincial consumer protection laws
+Disclosure requirements per province
+GUARD agent, deal disclosure templates
+
+US Compliance (Phase 5)
+Regulation
+Requirement
+TCPA
+SMS/voice consent requirements
+FTC Safeguards Rule
+Customer financial data protection (Gramm-Leach-Bliley)
+CCPA
+California privacy rights
+CAN-SPAM
+Email unsubscribe requirements
+
+SOC 2 Type II Roadmap
+Month 10: Auditor engaged (Vanta or Drata for automation)
+Month 10: Evidence collection begins (access logs, change management, incident response)
+Month 11: Penetration test completed
+Month 12: SOC 2 Type II report issued
+Ongoing: Annual renewal + continuous monitoring via Vanta
+
+
+20. Launch Strategy
+Beta Launch (Month 4)
+Target: 5–10 dealers in Metro Vancouver / Lower Mainland
+Source: Dhiraj's LMBA network + Ansatel Communications dealer contacts
+Offer: Free for 90 days in exchange for weekly feedback sessions
+Goal: Validate NOVA agent response rates, inventory syndication reliability, and core CRM workflows
+Soft Launch (Month 6)
+Target: 30 dealers — BC, Alberta, Ontario
+Channels: Cold email via PostMTA/InboxGrove infrastructure, LinkedIn outreach, LMBA network
+Offer: 50% off first 3 months for early adopters
+Goal: $15K MRR, 3 case studies, NPS >50
+Full Launch (Month 8–9)
+Target: 150 dealers — Canada-wide
+Channels:
+
+AutoTrader Canada partner program
+Google Ads (target: "dealer CRM Canada", "VinSolutions alternative", "DealerSocket alternative")
+Content: SEO blog targeting dealer operations keywords
+YouTube: demo videos and dealer testimonials
+Dealer association partnerships (UCDA, AMVIC)
+
+Goal: $150K MRR by Month 12 ($1.8M ARR run rate)
+US Launch (Month 12)
+Target: 50 US dealers — Pacific Northwest, California (markets with Canadian dealer overlap)
+Channels: Dealer20 groups, NIADA membership, NABD (BHPH association)
+
+
+Appendix A — Environment Variables Reference
+# Database
+
+DATABASE_URL=postgresql://...
+
+REDIS_URL=redis://...
+
+CLICKHOUSE_URL=https://...
+
+ELASTICSEARCH_URL=https://...
+
+# Auth
+
+JWT_SECRET=
+
+JWT_REFRESH_SECRET=
+
+NEXTAUTH_SECRET=
+
+# AWS
+
+AWS_REGION=ca-central-1
+
+AWS_S3_BUCKET=dealeros-media-prod
+
+CLOUDFRONT_DOMAIN=media.dealeros.ca
+
+# AI
+
+ANTHROPIC_API_KEY=
+
+OPENAI_API_KEY=
+
+LANGFUSE_PUBLIC_KEY=
+
+LANGFUSE_SECRET_KEY=
+
+# Communications
+
+TWILIO_ACCOUNT_SID=
+
+TWILIO_AUTH_TOKEN=
+
+TWILIO_PHONE_NUMBER=
+
+SENDGRID_API_KEY=
+
+WHATSAPP_ACCESS_TOKEN=
+
+# Voice
+
+RETELL_API_KEY=
+
+ELEVENLABS_API_KEY=
+
+# Integrations
+
+DOCUSIGN_INTEGRATION_KEY=
+
+CARFAX_API_KEY=
+
+ROUTEONE_API_KEY=
+
+STRIPE_SECRET_KEY=
+
+STRIPE_WEBHOOK_SECRET=
+
+
+Appendix B — Monorepo Structure
+dealeros/
+
+├── apps/
+
+│   ├── web/                    # Next.js 15 dealer dashboard
+
+│   ├── mobile/                 # React Native + Expo app
+
+│   └── marketing/              # Marketing website (Next.js)
+
+├── services/
+
+│   ├── crm/                    # Node.js + Fastify CRM service
+
+│   ├── inventory/              # Go inventory service
+
+│   ├── ai-orchestrator/        # Python + FastAPI + LangGraph
+
+│   ├── messaging/              # Node.js messaging service
+
+│   ├── deals/                  # Node.js deals + F&I service
+
+│   ├── bhph/                   # Node.js BHPH service
+
+│   ├── reporting/              # Python reporting + ClickHouse
+
+│   ├── billing/                # Node.js + Stripe billing
+
+│   └── website-builder/        # Node.js dealer website service
+
+├── packages/
+
+│   ├── ui/                     # Shared React component library (shadcn/ui base)
+
+│   ├── db/                     # Prisma schema + migrations
+
+│   ├── types/                  # Shared TypeScript types
+
+│   ├── utils/                  # Shared utilities
+
+│   └── config/                 # Shared ESLint, TypeScript, Tailwind configs
+
+├── agents/
+
+│   ├── nova/                   # Lead response agent
+
+│   ├── aria/                   # Voice BDC agent
+
+│   ├── sync/                   # Omnichannel messaging agent
+
+│   ├── score/                  # Predictive lead scorer
+
+│   ├── vin-gpt/                # Inventory intelligence agent
+
+│   ├── deal/                   # Deal structuring agent
+
+│   ├── revive/                 # Re-engagement agent
+
+│   ├── pulse/                  # Executive insights agent
+
+│   ├── guard/                  # Compliance agent
+
+│   ├── trade/                  # Trade-in evaluation agent
+
+│   ├── vision/                 # Photo intelligence agent
+
+│   └── web/                    # Website personalization agent
+
+├── infra/
+
+│   ├── terraform/              # AWS IaC
+
+│   ├── k8s/                    # Kubernetes manifests
+
+│   └── docker/                 # Dockerfiles per service
+
+├── scripts/                    # DB migrations, seed data, utilities
+
+├── docs/                       # Architecture docs, API specs, ADRs
+
+└── turbo.json                  # Turborepo pipeline config
+
+
+Appendix C — Phase Summary Timeline
+Month 1-2   ████████████████  Phase 1: Foundation
+
+             └── Auth, DB, Infra, Design System
+
+Month 3-4   ████████████████  Phase 2: Core Product (MVP)
+
+             └── CRM, Inventory, Syndication, NOVA Agent
+
+             └── ✅ MVP LAUNCH — Beta Dealers Onboard
+
+Month 5-7   ████████████████████████  Phase 3: Full Platform
+
+             └── Deal Desk, F&I, ARIA Voice, SCORE, Mobile App
+
+             └── Website Builder, Analytics, VIN-GPT, REVIVE
+
+Month 8-10  ████████████████████████  Phase 4: Enterprise
+
+             └── BHPH, DMS Bridges, Multi-Rooftop
+
+             └── All 12 Agents, SOC 2 Audit
+
+Month 11-12 ████████████████  Phase 5: Market Dominance
+
+             └── US Launch, Open API, Ads Agents, Series A Prep
+
+             └── ✅ SOC 2 Type II Certified
+
+
+
+DealerOS Build Plan v1.0 — AdaptUs Group Inc. — Confidential
+dhirajchatpar.com | netwit.ca | adaptusgroup.com
+

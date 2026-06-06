@@ -1,0 +1,287 @@
+@import "tailwindcss";
+
+/* Tailwind v4 CSS-first configuration - DealerOS Design System */
+@theme {
+  /* Colors - DealerOS Design Tokens (Dark Mode First) */
+  --color-primary: #0A0C0F;
+  --color-card: #111318;
+  --color-elevated: #1A1D24;
+  --color-border: #1E2229;
+  --color-border-active: #2A2F3A;
+  --color-text-primary: #E2E8F0;
+  --color-text-muted: #9CA3AF;
+  --color-accent: #E8FF47;
+  --color-success: #22D3A0;
+  --color-info: #3B82F6;
+  --color-warning: #F97316;
+  --color-danger: #EF4444;
+  --color-ai: #A855F7;
+
+  /* Font Families */
+  --font-sans: 'DM Sans', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap');
+
+/* Base styles */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-sans);
+  background-color: var(--color-primary);
+  color: var(--color-text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-active);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted);
+}
+
+/* Text selection */
+::selection {
+  background: var(--color-accent);
+  color: var(--color-primary);
+}
+
+/* Focus ring styles */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* Loading spinner animation */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Pulse animation for skeletons */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* Slide-in animation for modals */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-in {
+  animation: slideIn 0.2s ease-out;
+}
+
+/* Fade animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.15s ease-out;
+}
+
+/* Scale animation for buttons */
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.15s ease-out;
+}
+
+/* Utility classes for card hover effect */
+.card-hover {
+  transition: all 0.2s ease-out;
+}
+
+.card-hover:hover {
+  box-shadow: 0 0 20px rgba(232, 255, 71, 0.1);
+  border-color: var(--color-border-active);
+}
+
+/* Border glow effect */
+.border-glow {
+  box-shadow: 0 0 0 1px var(--color-border-active);
+}
+
+/* Button active state */
+.btn-active {
+  transform: scale(0.98);
+}
+
+/* Sidebar item styles */
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  color: var(--color-text-muted);
+  transition: all 0.15s ease-out;
+}
+
+.sidebar-item:hover {
+  background-color: var(--color-elevated);
+  color: var(--color-text-primary);
+}
+
+.sidebar-item.active {
+  background-color: var(--color-elevated);
+  color: var(--color-accent);
+}
+
+/* Input styles */
+.input-dark {
+  background-color: var(--color-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  padding: 0.625rem 0.875rem;
+  color: var(--color-text-primary);
+  transition: border-color 0.15s ease-out;
+}
+
+.input-dark:focus {
+  border-color: var(--color-accent);
+  outline: none;
+}
+
+.input-dark::placeholder {
+  color: var(--color-text-muted);
+}
+
+/* Badge variants */
+.badge-info {
+  background-color: rgba(59, 130, 246, 0.15);
+  color: var(--color-info);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.badge-warning {
+  background-color: rgba(249, 115, 22, 0.15);
+  color: var(--color-warning);
+  border: 1px solid rgba(249, 115, 22, 0.3);
+}
+
+.badge-success {
+  background-color: rgba(34, 211, 160, 0.15);
+  color: var(--color-success);
+  border: 1px solid rgba(34, 211, 160, 0.3);
+}
+
+.badge-danger {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: var(--color-danger);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.badge-accent {
+  background-color: rgba(232, 255, 71, 0.15);
+  color: var(--color-accent);
+  border: 1px solid rgba(232, 255, 71, 0.3);
+}
+
+.badge-ai {
+  background-color: rgba(168, 85, 247, 0.15);
+  color: var(--color-ai);
+  border: 1px solid rgba(168, 85, 247, 0.3);
+}
+
+.badge-muted {
+  background-color: var(--color-elevated);
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+}
+
+/* Table styles */
+.table-row-hover:hover {
+  background-color: var(--color-elevated);
+}
+
+.table-header-sticky {
+  position: sticky;
+  top: 0;
+  background-color: var(--color-card);
+  z-index: 10;
+}
+
+/* Backdrop blur for modals */
+.backdrop-blur-modal {
+  backdrop-filter: blur(8px);
+  background-color: rgba(10, 12, 15, 0.8);
+}
+
+/* Slide-in-right animation for toasts */
+@keyframes slide-in-right {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.2s ease-out;
+}
+
+/* Slide-in-left animation for mobile drawer */
+@keyframes slide-in-left {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+.animate-slide-in-left {
+  animation: slide-in-left 0.2s ease-out;
+}

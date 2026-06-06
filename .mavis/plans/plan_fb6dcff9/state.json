@@ -1,0 +1,95 @@
+{
+  "plan_id": "plan_fb6dcff9",
+  "status": "failed",
+  "owner_session_id": "406018377257222",
+  "cycle": 1,
+  "phase": "producing",
+  "results": [
+    {
+      "task_id": "project-scaffold",
+      "status": "producing",
+      "attempt": 0,
+      "verifier_results": [],
+      "gate_results": [],
+      "timeout_extended_ms": 0
+    },
+    {
+      "task_id": "database-schema",
+      "status": "blocked",
+      "attempt": 0,
+      "verifier_results": [],
+      "gate_results": [],
+      "timeout_extended_ms": 0
+    },
+    {
+      "task_id": "api-auth",
+      "status": "blocked",
+      "attempt": 0,
+      "verifier_results": [],
+      "gate_results": [],
+      "timeout_extended_ms": 0
+    },
+    {
+      "task_id": "api-crm",
+      "status": "blocked",
+      "attempt": 0,
+      "verifier_results": [],
+      "gate_results": [],
+      "timeout_extended_ms": 0
+    },
+    {
+      "task_id": "api-inventory",
+      "status": "blocked",
+      "attempt": 0,
+      "verifier_results": [],
+      "gate_results": [],
+      "timeout_extended_ms": 0
+    },
+    {
+      "task_id": "design-system",
+      "status": "blocked",
+      "attempt": 0,
+      "verifier_results": [],
+      "gate_results": [],
+      "timeout_extended_ms": 0
+    },
+    {
+      "task_id": "frontend-pages",
+      "status": "blocked",
+      "attempt": 0,
+      "verifier_results": [],
+      "gate_results": [],
+      "timeout_extended_ms": 0
+    },
+    {
+      "task_id": "ai-agent-console",
+      "status": "blocked",
+      "attempt": 0,
+      "verifier_results": [],
+      "gate_results": [],
+      "timeout_extended_ms": 0
+    },
+    {
+      "task_id": "integration-tests",
+      "status": "blocked",
+      "attempt": 0,
+      "verifier_results": [],
+      "gate_results": [],
+      "timeout_extended_ms": 0
+    },
+    {
+      "task_id": "code-review",
+      "status": "blocked",
+      "attempt": 0,
+      "verifier_results": [],
+      "gate_results": [],
+      "timeout_extended_ms": 0
+    }
+  ],
+  "dynamic_tasks": [],
+  "task_overrides": {},
+  "consecutive_failures": 0,
+  "engine_sessions": {},
+  "created_at": 1780679058661,
+  "updated_at": 1780679062099
+}

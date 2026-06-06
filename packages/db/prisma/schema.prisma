@@ -1,0 +1,1765 @@
+// ============================================================
+// DealerOS — PostgreSQL Schema (Prisma)
+// Multi-tenant CRM + Inventory + Deals + AI
+// ============================================================
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextIndex", "fullTextSearch"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+// AUTH & TENANTS
+// ============================================================
+
+/// Dealer — primary tenant entity. Each dealer is an isolated data partition.
+model Dealer {
+  id          String     @id @default(cuid())
+  name        String
+  subdomain   String     @unique
+  plan        DealerPlan @default(STARTER)
+  settings    Json       @default("{}")
+  aiAgents    String[]   @default(["NOVA", "ARIO", "SAGE", "LUCAS"])
+  trialEndsAt DateTime?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  // Relations
+  users              User[]
+  leads              Lead[]
+  customers          Customer[]
+  notes              Note[]
+  bhphPayments       BhphPayment[]
+  activities         Activity[]
+  appointments       Appointment[]
+  communications     Communication[]
+  vehicles           Vehicle[]
+  deals              Deal[]
+  documents          Document[]
+  documentSignatures DocumentSignature[]
+  bhphContracts      BhphContract[]
+  pipelineStages     PipelineStage[]
+  tasks              Task[]
+  tickets            Ticket[]
+  leadScores         LeadScore[]
+  agentRuns          AgentRun[]
+  embeddings         Embedding[]
+  syndicationLogs    SyndicationLog[]
+  vehicleMedia       VehicleMedia[]
+  routingLog         LeadRoutingLog[]
+  calendarEvents     CalendarEvent[]
+  duplicateLogs      DuplicateDetectionLog[]
+  mergeRecords       CustomerMergeRecord[]
+  activityLogs       ActivityLog[]
+  campaigns          Campaign[]
+  enrollments        CampaignEnrollment[]
+  subscription       Subscription?
+  stripeInvoices     InvoiceStripe[]
+  usageRecords       UsageRecord[]
+  notifications      Notification[]
+  website            DealerWebsite?
+
+  @@index([subdomain])
+  @@map("dealers")
+}
+
+// ============================================================
+// BILLING — STRIPE SUBSCRIPTIONS
+// ============================================================
+
+/// Subscription — one Stripe subscription per dealer. Mirrors the
+/// canonical state from Stripe so we can serve the dashboard without
+/// making a Stripe API call on every page load. Updated on every
+/// webhook event and on direct mutations (upgrade / cancel).
+model Subscription {
+  id                   String             @id @default(cuid())
+  dealerId             String             @unique
+  dealer               Dealer             @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+  stripeCustomerId     String
+  stripeSubscriptionId String             @unique
+  stripePriceId        String
+  /// Cached plan enum (also driven by the dealer's `plan` column on
+  /// onboarding, but kept in sync from webhooks to make dashboard
+  /// rendering cheap).
+  plan                 SubscriptionPlan
+  status               SubscriptionStatus
+  currentPeriodStart   DateTime
+  currentPeriodEnd     DateTime
+  trialStart           DateTime?
+  trialEnd             DateTime?
+  cancelAtPeriodEnd    Boolean            @default(false)
+  cancelledAt          DateTime?
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  @@index([dealerId])
+  @@index([status])
+  @@index([plan])
+  @@map("subscriptions")
+}
+
+enum SubscriptionPlan {
+  STARTER
+  GROWTH
+  PRO
+  ENTERPRISE
+}
+
+enum SubscriptionStatus {
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  UNPAID
+  INCOMPLETE
+  INCOMPLETE_EXPIRED
+}
+
+/// InvoiceStripe — one row per Stripe invoice we've seen for the
+/// dealer. Backed by the `stripe_invoices` table to avoid clashing
+/// with the existing Document.metadata approach for ad-hoc invoicing.
+model InvoiceStripe {
+  id              String    @id @default(cuid())
+  dealerId        String
+  dealer          Dealer    @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+  stripeInvoiceId String    @unique
+  amount          Decimal   @db.Decimal(10, 2)
+  currency        String    @default("usd")
+  status          String
+  pdfUrl          String?
+  paidAt          DateTime?
+  createdAt       DateTime  @default(now())
+
+  @@index([dealerId])
+  @@index([dealerId, createdAt])
+  @@index([status])
+  @@map("stripe_invoices")
+}
+
+/// UsageRecord — metered usage events. One row per "thing consumed"
+/// (a lead created, an SMS sent, an email sent, AI tokens spent).
+/// Aggregated by the usage-meter service to enforce plan limits.
+model UsageRecord {
+  id         String   @id @default(cuid())
+  dealerId   String
+  dealer     Dealer   @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+  /// Free-form metric key. Convention: 'leads' | 'sms_sent' | 'emails_sent' | 'ai_tokens'
+  metric     String
+  quantity   Int      @default(1)
+  recordedAt DateTime @default(now())
+  metadata   Json?
+
+  @@index([dealerId, metric, recordedAt])
+  @@index([dealerId, recordedAt])
+  @@map("usage_records")
+}
+
+enum DealerPlan {
+  STARTER
+  GROWTH
+  PRO
+  ENTERPRISE
+}
+
+// ============================================================
+// USERS
+// ============================================================
+
+/// User — authenticated staff member belonging to a dealer.
+model User {
+  id           String     @id @default(cuid())
+  dealerId     String
+  email        String
+  name         String
+  passwordHash String?
+  role         UserRole   @default(SALES)
+  phone        String?
+  permissions  Json       @default("[]")
+  lastLogin    DateTime?
+  status       UserStatus @default(ACTIVE)
+  invitedAt    DateTime?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  // Relations
+  dealer        Dealer                @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+  leads         Lead[]                @relation("AssignedLeads")
+  activities    Activity[]
+  appointments  Appointment[]
+  deals         Deal[]
+  notes         Note[]
+  routedLeads   LeadRoutingLog[]      @relation("RoutedLeads")
+  activityLogs  ActivityLog[]
+  mergeActions  CustomerMergeRecord[] @relation("MergeActor")
+  notifications Notification[]
+  campaigns     Campaign[]              @relation("CampaignOwner")
+  enrollments   CampaignEnrollment[]    @relation("EnrollmentActor")
+  assignedTasks Task[]
+  createdTasks  Task[] @relation("TaskCreator")
+  assignedTickets Ticket[]
+  createdTickets Ticket[] @relation("TicketCreator")
+  ticketResponses TicketResponse[]
+
+  @@unique([dealerId, email])
+  @@index([dealerId])
+  @@index([email])
+  @@map("users")
+}
+
+enum UserRole {
+  ADMIN
+  MANAGER
+  SALES
+  BDC
+  FINANCE
+}
+
+enum UserStatus {
+  ACTIVE
+  INVITED
+  DISABLED
+}
+
+// ============================================================
+// CRM — LEADS
+// ============================================================
+
+/// Lead — sales pipeline entry with scoring and assignment.
+model Lead {
+  id              String     @id @default(cuid())
+  dealerId        String
+  source          String?
+  status          LeadStatus @default(NEW)
+  score           Int        @default(0) // 0–100 (legacy, kept in sync with currentScore)
+  currentScore    Int        @default(0) // 0–100 — the rules-based score
+  classification  String     @default("cold") // 'cold' | 'warm' | 'hot'
+  lastScoredAt    DateTime?
+  lastContactedAt DateTime?
+  unsubscribed    Boolean    @default(false)
+  bounced         Boolean    @default(false)
+  assignedToId    String?
+  customerId      String?
+  firstName       String
+  lastName        String
+  email           String?
+  phone           String?
+  vehicleInterest Json       @default("[]")
+  sourceMeta      Json       @default("{}")
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  // Relations
+  dealer         Dealer           @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+  assignedTo     User?            @relation("AssignedLeads", fields: [assignedToId], references: [id], onDelete: SetNull)
+  customer       Customer?        @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  activities     Activity[]
+  appointments   Appointment[]
+  communications Communication[]
+  deals          Deal[]
+  leadScores     LeadScore[]
+  routingLog     LeadRoutingLog[]
+  enrollments    CampaignEnrollment[]
+  tasks          Task[]
+
+  @@index([dealerId])
+  @@index([dealerId, status])
+  @@index([dealerId, currentScore])
+  @@index([dealerId, classification])
+  @@index([assignedToId])
+  @@map("leads")
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  APPOINTMENT
+  DEMO
+  DEAL
+  LOST
+}
+
+// ============================================================
+// CRM — CUSTOMERS
+// ============================================================
+
+/// Customer — buyer / previous customer record.
+model Customer {
+  id           String      @id @default(cuid())
+  dealerId     String
+  firstName    String
+  lastName     String
+  email        String?
+  phone        String?
+  address      Json?
+  dob          DateTime?
+  creditTier   CreditTier?
+  dlNumber     String?
+  dlProvince   String?
+  notes        String?
+  tags         String[]    @default([])
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  // Duplicate detection / merge
+  mergedIntoId String?
+  deletedAt    DateTime?
+
+  // Relations
+  dealer                Dealer                @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+  mergedInto            Customer?             @relation("CustomerMerge", fields: [mergedIntoId], references: [id], onDelete: SetNull)
+  mergedFrom            Customer[]            @relation("CustomerMerge")
+  leads                 Lead[]
+  tasks                 Task[]
+  deals                 Deal[]
+  activities            Activity[]
+  appointments          Appointment[]
+  communications        Communication[]
+  mergeMasterRecords    CustomerMergeRecord[] @relation("MergeMaster")
+  mergeDuplicateRecords CustomerMergeRecord[] @relation("MergeDuplicate")
+  enrollments           CampaignEnrollment[]
+
+  @@index([dealerId])
+  @@index([dealerId, lastName])
+  @@index([dealerId, email])
+  @@index([dealerId, phone])
+  @@index([dealerId, deletedAt])
+  @@index([mergedIntoId])
+  @@map("customers")
+}
+
+enum CreditTier {
+  A
+  B
+  C
+  D
+  SUBPRIME
+}
+
+// ============================================================
+// CRM — ACTIVITIES
+// ============================================================
+
+/// Activity — timeline of all interactions across CRM entities.
+model Activity {
+  id         String       @id @default(cuid())
+  dealerId   String
+  entityType EntityType
+  entityId   String
+  type       ActivityType
+  body       String?
+  metadata   Json?
+  authorId   String?
+  agentName  String?
+  createdAt  DateTime     @default(now())
+
+  // Relations
+  dealer   Dealer    @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+  author   User?     @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  lead     Lead?     @relation(fields: [entityId], references: [id], map: "fk_activity_lead")
+  customer Customer? @relation(fields: [entityId], references: [id], map: "fk_activity_customer")
+  deal     Deal?     @relation(fields: [entityId], references: [id], map: "fk_activity_deal")
+  vehicle  Vehicle?  @relation(fields: [entityId], references: [id], map: "fk_activity_vehicle")
+
+  @@index([dealerId])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+  @@map("activities")
+}
+
+enum EntityType {
+  LEAD
+  CUSTOMER
+  DEAL
+  VEHICLE
+}
+
+enum ActivityType {
+  CALL
+  EMAIL
+  SMS
+  NOTE
+  APPOINTMENT
+  STATUS_CHANGE
+  AI_ACTION
+}
+
+// ============================================================
+// CRM — APPOINTMENTS
+// ============================================================
+
+/// Appointment — scheduled events tied to leads or customers.
+model Appointment {
+  id           String            @id @default(cuid())
+  dealerId     String
+  leadId       String?
+  customerId   String?
+  assignedToId String?
+  type         AppointmentType
+  scheduledAt  DateTime
+  durationMin  Int               @default(30)
+  status       AppointmentStatus @default(SCHEDULED)
+  notes        String?
+  createdAt    DateTime          @default(now())
+
+  // Relations
+  dealer     Dealer    @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+  lead       Lead?     @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  customer   Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  assignedTo User?     @relation(fields: [assignedToId], references: [id], onDelete: SetNull)
+
+  @@index([dealerId])
+  @@index([dealerId, scheduledAt])
+  @@index([assignedToId])
+  @@map("appointments")
+}
+
+enum AppointmentType {
+  SALES
+  TEST_DRIVE
+  SERVICE
+  DELIVERY
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+// ============================================================
+// CRM — COMMUNICATIONS
+// ============================================================
+
+/// Communication — logged inbound/outbound messages across channels.
+model Communication {
+  id          String                 @id @default(cuid())
+  dealerId    String
+  leadId      String?
+  customerId  String?
+  channel     CommunicationChannel
+  direction   CommunicationDirection
+  fromAddr    String?
+  toAddr      String?
+  subject     String?
+  body        String?
+  status      CommunicationStatus    @default(SENT)
+  externalId  String?
+  aiGenerated Boolean                @default(false)
+  sentAt      DateTime               @default(now())
+
+  // Relations
+  dealer   Dealer    @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+  lead     Lead?     @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  customer Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+
+  @@index([dealerId])
+  @@index([leadId])
+  @@index([customerId])
+  @@map("communications")
+}
+
+enum CommunicationChannel {
+  SMS
+  EMAIL
+  WHATSAPP
+  VOICE
+}
+
+enum CommunicationDirection {
+  INBOUND
+  OUTBOUND
+}
+
+enum CommunicationStatus {
+  PENDING
+  SENT
+  DELIVERED
+  FAILED
+}
+
+// ============================================================
+// INVENTORY — VEHICLES
+// ============================================================
+
+/// Vehicle — inventory unit. VIN is unique per dealer (not globally).
+model Vehicle {
+  id            String           @id @default(cuid())
+  dealerId      String
+  vin           String
+  make          String
+  model         String
+  year          Int
+  trim          String?
+  bodyStyle     String?
+  mileage       Int?
+  exteriorColor String?
+  interiorColor String?
+  fuelType      String?
+  transmission  String?
+  drivetrain    String?
+  engine        String?
+  condition     VehicleCondition @default(USED)
+  status        VehicleStatus    @default(AVAILABLE)
+  stockNumber   String?
+  notes         String?
+  acquiredAt    DateTime?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  // Relations
+  dealer          Dealer           @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+  pricing         VehiclePricing?
+  media           VehicleMedia[]
+  syndicationLogs SyndicationLog[]
+  deals           Deal[]
+  activities      Activity[]
+
+  @@unique([dealerId, vin])
+  @@index([dealerId])
+  @@index([dealerId, status])
+  @@index([make, model])
+  @@map("vehicles")
+}
+
+enum VehicleCondition {
+  NEW
+  USED
+  CERTIFIED
+}
+
+enum VehicleStatus {
+  AVAILABLE
+  SOLD
+  PENDING
+  WHOLESALE
+}
+
+// ============================================================
+// INVENTORY — PRICING
+// ============================================================
+
+/// VehiclePricing — cost, prices, and floor plan info per vehicle.
+model VehiclePricing {
+  id            String   @id @default(cuid())
+  vehicleId     String   @unique
+  cost          Float?
+  askingPrice   Float?
+  internetPrice Float?
+  marketValue   Float?
+  floorPlan     Float?
+  reconCost     Float?
+  updatedAt     DateTime @default(now()) @updatedAt
+
+  // Relations
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@map("vehicle_pricing")
+}
+
+// ============================================================
+// INVENTORY — MEDIA
+// ============================================================
+
+/// VehicleMedia — photos, videos, 360° spins for vehicles.
+model VehicleMedia {
+  id         String    @id @default(cuid())
+  vehicleId  String
+  dealerId   String
+  s3Key      String
+  cdnUrl     String?
+  type       MediaType @default(PHOTO)
+  sortOrder  Int       @default(0)
+  aiScore    Float?
+  isPrimary  Boolean   @default(false)
+  uploadedAt DateTime  @default(now())
+
+  // Relations
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  dealer  Dealer  @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+
+  @@index([vehicleId])
+  @@index([dealerId])
+  @@map("vehicle_media")
+}
+
+enum MediaType {
+  PHOTO
+  VIDEO
+  SPIN360
+}
+
+// ============================================================
+// INVENTORY — SYNDICATION
+// ============================================================
+
+/// SyndicationLog — sync history with third-party listing platforms.
+model SyndicationLog {
+  id         String             @id @default(cuid())
+  vehicleId  String
+  dealerId   String
+  channel    SyndicationChannel
+  status     String?
+  externalId String?
+  lastSynced DateTime?
+  errorMsg   String?
+  createdAt  DateTime           @default(now())
+
+  // Relations
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  dealer  Dealer  @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+
+  @@index([vehicleId])
+  @@index([dealerId, channel])
+  @@map("syndication_logs")
+}
+
+enum SyndicationChannel {
+  AUTOTRADER
+  CARGURUS
+  KIJIJI
+  FACEBOOK
+}
+
+// ============================================================
+// DEALS & F&I
+// ============================================================
+
+/// Deal — sales transaction tying customer, vehicle, and terms together.
+model Deal {
+  id           String     @id @default(cuid())
+  dealerId     String
+  customerId   String
+  vehicleId    String?
+  leadId       String?
+  assignedToId String?
+  status       DealStatus @default(WORKING)
+  dealType     DealType   @default(RETAIL)
+  createdAt    DateTime   @default(now())
+  deliveredAt  DateTime?
+
+  // Relations
+  dealer       Dealer              @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+  customer     Customer            @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  vehicle      Vehicle?            @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
+  lead         Lead?               @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  assignedTo   User?               @relation(fields: [assignedToId], references: [id], onDelete: SetNull)
+  terms        DealTerms?
+  fiProducts   FiProduct[]
+  documents    Document[]
+  signatures   DocumentSignature[]
+  activities   Activity[]
+  bhphContract BhphContract?
+
+  @@index([dealerId])
+  @@index([dealerId, status])
+  @@index([customerId])
+  @@map("deals")
+}
+
+enum DealStatus {
+  WORKING
+  PENDING_FINANCE
+  APPROVED
+  DELIVERED
+  UNWOUND
+}
+
+enum DealType {
+  RETAIL
+  LEASE
+  BHPH
+  WHOLESALE
+  CASH
+}
+
+// ============================================================
+// DEALS — TERMS
+// ============================================================
+
+/// DealTerms — financial structure of a deal.
+model DealTerms {
+  id             String  @id @default(cuid())
+  dealId         String  @unique
+  salePrice      Float?
+  tradeValue     Float?
+  tradePayoff    Float?
+  downPayment    Float?
+  taxAmount      Float?
+  feeTotal       Float?
+  financedAmount Float?
+  rate           Float?
+  termMonths     Int?
+  paymentAmount  Float?
+  lender         String?
+  frontGross     Float?
+  backGross      Float?
+
+  // Relations
+  deal Deal @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  @@map("deal_terms")
+}
+
+// ============================================================
+// DEALS — F&I PRODUCTS
+// ============================================================
+
+/// FiProduct — optional F&I products attached to a deal.
+model FiProduct {
+  id           String        @id @default(cuid())
+  dealId       String
+  productType  FiProductType
+  provider     String?
+  cost         Float?
+  sellingPrice Float?
+  termMonths   Int?
+  deductible   Float?
+
+  // Relations
+  deal Deal @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  @@index([dealId])
+  @@map("fi_products")
+}
+
+enum FiProductType {
+  WARRANTY
+  GAP
+  CREDIT_INSURANCE
+  TIRE_WHEEL
+  RUST
+}
+
+// ============================================================
+// DEALS — DOCUMENTS
+// ============================================================
+
+/// Document — signed/unsigned files attached to deals, invoices, or
+/// other record types. The `metadata` JSON column is used by the
+/// invoice service to persist amount/line items/status without a
+/// dedicated Invoice table.
+model Document {
+  id         String    @id @default(cuid())
+  dealId     String?
+  dealerId   String
+  type       String?
+  s3Key      String
+  docusignId String?
+  signedAt   DateTime?
+  signedBy   String?
+  metadata   Json?
+  createdAt  DateTime  @default(now())
+
+  // Relations
+  deal       Deal?               @relation(fields: [dealId], references: [id], onDelete: SetNull)
+  dealer     Dealer              @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+  signatures DocumentSignature[]
+
+  @@index([dealerId])
+  @@index([dealId])
+  @@index([dealerId, type])
+  @@map("documents")
+}
+
+// ============================================================
+// DOCUSIGN — E-SIGNATURE ENVELOPES
+// ============================================================
+
+/// DocumentSignature — a DocuSign envelope attached to a deal. The
+/// `signers` JSON column is the source of truth for per-recipient
+/// status (DocuSign's webhook payload is the live source during
+/// signing; we mirror it here for tenant-scoped reads).
+///
+/// Lifecycle:
+///   CREATED → SENT → DELIVERED → COMPLETED
+///                    ↘ DECLINED
+///                    ↘ VOIDED
+///                    ↘ EXPIRED
+///
+/// `pdfUrl` is populated by the webhook handler once DocuSign
+/// emits `envelope-completed` and the combined PDF is downloaded
+/// to S3.
+model DocumentSignature {
+  id             String          @id @default(cuid())
+  dealerId       String
+  dealId         String?
+  documentId     String?
+  envelopeId     String          @unique // DocuSign envelope ID
+  templateId     String
+  status         SignatureStatus @default(CREATED)
+  signers        Json            @default("[]")
+  documentType   DocumentType
+  subject        String?
+  emailMessage   String?
+  createdById    String?
+  completedAt    DateTime?
+  declinedAt     DateTime?
+  declinedReason String?
+  voidedAt       DateTime?
+  voidedReason   String?
+  sentAt         DateTime?
+  deliveredAt    DateTime?
+  expiresAt      DateTime?
+  pdfUrl         String?
+  pdfS3Key       String?
+  metadata       Json?           @default("{}")
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  // Relations
+  dealer   Dealer    @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+  deal     Deal?     @relation(fields: [dealId], references: [id], onDelete: SetNull)
+  document Document? @relation(fields: [documentId], references: [id], onDelete: SetNull)
+
+  @@unique([dealerId, envelopeId])
+  @@index([dealerId])
+  @@index([dealerId, status])
+  @@index([dealerId, documentType])
+  @@index([dealerId, createdAt])
+  @@index([dealId])
+  @@index([documentId])
+  @@index([status])
+  @@index([completedAt])
+  @@map("document_signatures")
+}
+
+enum SignatureStatus {
+  CREATED
+  SENT
+  DELIVERED
+  COMPLETED
+  DECLINED
+  VOIDED
+  EXPIRED
+}
+
+enum DocumentType {
+  BILL_OF_SALE
+  FI_CONTRACT
+  CREDIT_APP
+  WARRANTY
+  DISCLOSURE
+  TRADE_APPRAISAL
+  DELIVERY_RECEIPT
+  OTHER
+}
+
+// ============================================================
+// BHPH — CONTRACTS
+// ============================================================
+
+/// BhphContract — buy-here-pay-here in-house financing contract.
+model BhphContract {
+  id            String   @id @default(cuid())
+  dealId        String   @unique
+  dealerId      String
+  principal     Float
+  rate          Float
+  termMonths    Int
+  paymentAmount Float
+  paymentDay    Int
+  firstPayment  DateTime
+  maturityDate  DateTime
+  totalPayments Float
+  status        String   @default("active")
+
+  // Relations
+  deal     Deal          @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  dealer   Dealer        @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+  payments BhphPayment[]
+
+  @@index([dealerId])
+  @@map("bhph_contracts")
+}
+
+// ============================================================
+// BHPH — PAYMENTS
+// ============================================================
+
+/// BhphPayment — individual payment records for BHPH contracts.
+model BhphPayment {
+  id               String    @id @default(cuid())
+  contractId       String
+  dealerId         String
+  dueDate          DateTime
+  paidDate         DateTime?
+  amountDue        Float
+  amountPaid       Float?
+  principalPortion Float?
+  interestPortion  Float?
+  balanceAfter     Float?
+  method           String?
+  status           String    @default("pending")
+
+  // Relations
+  contract BhphContract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  dealer   Dealer       @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+
+  @@index([contractId])
+  @@index([dealerId])
+  @@map("bhph_payments")
+}
+
+// ============================================================
+// AI & ANALYTICS — LEAD SCORES
+// ============================================================
+
+/// LeadScore — historical snapshot of a lead's rules-based score.
+/// One row per recompute; the `Lead.currentScore` and `Lead.classification`
+/// columns are the latest projection (denormalized for fast list queries).
+model LeadScore {
+  id             String   @id @default(cuid())
+  dealerId       String
+  leadId         String
+  score          Int // 0–100
+  classification String // 'cold' | 'warm' | 'hot'
+  signals        Json     @default("{}") // rule → delta map (e.g. { hasEmail: 20, hasPhone: 20 })
+  modelVersion   String   @default("rules-v1")
+  scoredAt       DateTime @default(now())
+
+  // Relations
+  lead   Lead   @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  dealer Dealer @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+
+  @@index([leadId])
+  @@index([dealerId])
+  @@index([dealerId, leadId, scoredAt])
+  @@index([scoredAt])
+  @@map("lead_scores")
+}
+
+// ============================================================
+// AI & ANALYTICS — AGENT RUNS
+// ============================================================
+
+/// AgentRun — telemetry for AI agent executions.
+model AgentRun {
+  id         String   @id @default(cuid())
+  dealerId   String
+  agentName  String
+  entityType String?
+  entityId   String?
+  input      Json     @default("{}")
+  output     Json     @default("{}")
+  tokensIn   Int?
+  tokensOut  Int?
+  costUsd    Float?
+  durationMs Int?
+  status     String   @default("success")
+  createdAt  DateTime @default(now())
+
+  // Relations
+  dealer Dealer @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+
+  @@index([dealerId])
+  @@index([agentName])
+  @@index([entityType, entityId])
+  @@map("agent_runs")
+}
+
+// ============================================================
+// AI & ANALYTICS — EMBEDDINGS
+// ============================================================
+
+/// Embedding — vector embeddings for semantic search (pgvector).
+/// NOTE: `vector(1536)` is provided as Unsupported() for Prisma Client generation.
+/// The actual extension must be enabled in PostgreSQL via: CREATE EXTENSION IF NOT EXISTS vector;
+/// For production use, consider @prisma/adapter-pgvector or raw SQL for vector operations.
+model Embedding {
+  id         String                      @id @default(cuid())
+  dealerId   String
+  entityType String
+  entityId   String
+  vector     Unsupported("vector(1536)")
+  model      String?
+  createdAt  DateTime                    @default(now())
+
+  // Relations
+  dealer Dealer @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+
+  @@unique([dealerId, entityType, entityId])
+  @@index([dealerId])
+  @@map("embeddings")
+}
+
+// ============================================================
+// SALES PIPELINE — customizable stages
+// ============================================================
+
+/// PipelineStage — customizable lead/deal pipeline stages per dealer.
+model PipelineStage {
+  id        String   @id @default(cuid())
+  dealerId  String
+  name      String
+  color     String   @default("#6366f1")
+  sortOrder Int      @default(0)
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  dealer Dealer @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+
+  @@unique([dealerId, name])
+  @@index([dealerId])
+  @@index([dealerId, sortOrder])
+  @@map("pipeline_stages")
+}
+
+// ============================================================
+// TASKS — action items for reps
+// ============================================================
+
+/// Task — rep action items, optionally tied to leads or customers.
+model Task {
+  id          String     @id @default(cuid())
+  dealerId    String
+  title       String
+  description String?
+  type        TaskType   @default(FOLLOW_UP)
+  priority    TaskPriority @default(MEDIUM)
+  status      TaskStatus @default(OPEN)
+  dueAt       DateTime?
+  completedAt DateTime?
+  assignedToId String?
+  leadId      String?
+  customerId  String?
+  createdById String
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  // Relations
+  dealer     Dealer    @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+  assignedTo User?     @relation(fields: [assignedToId], references: [id], onDelete: SetNull)
+  lead       Lead?     @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  customer   Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  createdBy  User      @relation("TaskCreator", fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@index([dealerId])
+  @@index([dealerId, status])
+  @@index([assignedToId])
+  @@index([leadId])
+  @@index([customerId])
+  @@index([dueAt])
+  @@map("tasks")
+}
+
+enum TaskType {
+  FOLLOW_UP
+  CALL
+  EMAIL
+  MEETING
+  DOCUMENT
+  DELIVERY
+  OTHER
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum TaskStatus {
+  OPEN
+  COMPLETED
+  CANCELLED
+}
+
+// ============================================================
+// SUPPORT TICKETS — internal issue tracking
+// ============================================================
+
+/// Ticket — internal support tickets for the dealer team.
+model Ticket {
+  id          String        @id @default(cuid())
+  dealerId    String
+  subject     String
+  body        String
+  priority    TicketIssuePriority @default(MEDIUM)
+  status      TicketStatus  @default(OPEN)
+  category    String?
+  assignedToId String?
+  createdById String
+  resolvedAt  DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  // Relations
+  dealer     Dealer          @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+  assignedTo User?          @relation(fields: [assignedToId], references: [id], onDelete: SetNull)
+  createdBy  User           @relation("TicketCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  responses  TicketResponse[]
+
+  @@index([dealerId])
+  @@index([dealerId, status])
+  @@index([assignedToId])
+  @@index([createdById])
+  @@map("tickets")
+}
+
+/// TicketResponse — notes/responses on a ticket.
+model TicketResponse {
+  id        String   @id @default(cuid())
+  ticketId  String
+  authorId  String
+  body      String
+  isInternal Boolean @default(false)
+  createdAt DateTime @default(now())
+
+  // Relations
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  author User  @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([ticketId])
+  @@map("ticket_responses")
+}
+
+enum TicketIssuePriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+// ============================================================
+// INTERNAL — NOTES (cross-entity user notes)
+// ============================================================
+
+/// Note — freeform user notes attached to any entity.
+model Note {
+  id        String   @id @default(cuid())
+  userId    String
+  dealerId  String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dealer Dealer @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+
+  @@index([dealerId])
+  @@map("notes")
+}
+
+// ============================================================
+// ACTIVITY LOGS — comprehensive audit trail (DMS Module 10.2)
+// ============================================================
+
+/// ActivityLog — exhaustive, append-only audit log of every user action
+/// and significant system event. Multi-tenant (scoped by `dealerId`),
+/// queryable by action / entity / user / time range, and feeds the
+/// anomaly detector. Companion to the lighter `Activity` model which
+/// tracks CRM touchpoints only.
+model ActivityLog {
+  id         String   @id @default(cuid())
+  dealerId   String
+  userId     String?
+  action     String // e.g. 'lead.created', 'customer.updated', 'vehicle.deleted'
+  entityType String // 'lead' | 'customer' | 'vehicle' | 'deal' | 'user' | 'invoice' | etc
+  entityId   String?
+  before     Json? // snapshot of entity before change
+  after      Json? // snapshot after change
+  diff       Json? // { changed: [{field, before, after}], added: [...], removed: [...] }
+  ipAddress  String?
+  userAgent  String?
+  metadata   Json? // additional context (requestId, batchId, anomaly flags, etc.)
+  createdAt  DateTime @default(now())
+
+  // Relations
+  dealer Dealer @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+  user   User?  @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([dealerId])
+  @@index([userId])
+  @@index([action])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+  @@index([dealerId, createdAt])
+  @@index([dealerId, action])
+  @@map("activity_logs")
+}
+
+// ============================================================
+// LEAD ROUTING — AI engine logs
+// ============================================================
+
+/// LeadRoutingLog — audit trail of every routing decision the AI engine
+/// makes. Records strategy, candidates, choice, reason, and timing.
+model LeadRoutingLog {
+  id             String   @id @default(cuid())
+  dealerId       String
+  leadId         String
+  strategyUsed   String
+  candidateReps  Json
+  selectedRepId  String?
+  reason         String
+  responseTimeMs Int
+  routedAt       DateTime @default(now())
+
+  dealer Dealer @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+  lead   Lead   @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  rep    User?  @relation("RoutedLeads", fields: [selectedRepId], references: [id], onDelete: SetNull)
+
+  @@index([dealerId])
+  @@index([dealerId, routedAt])
+  @@index([leadId])
+  @@index([routedAt])
+  @@index([selectedRepId])
+  @@map("lead_routing_log")
+}
+
+// ============================================================
+// DUPLICATE DETECTION & MERGE
+// ============================================================
+
+/// DuplicateDetectionLog — every pair of records scored by the
+/// duplicate detector. Status flow: `pending` → `merged` | `dismissed`.
+/// Classification thresholds:
+///   - `auto_merge`   (score >= 0.90) — high confidence, prompt to merge
+///   - `flag`         (0.65 <= score < 0.90) — show badge, manual review
+///   - `not_duplicate` (score < 0.65)   — not stored in this table
+model DuplicateDetectionLog {
+  id             String    @id @default(cuid())
+  dealerId       String
+  entityType     String // 'customer' | 'lead'
+  entityAId      String
+  entityBId      String
+  score          Float
+  reasons        Json // ['email match', 'phone last-7 match', ...]
+  classification String // 'auto_merge' | 'flag' | 'not_duplicate'
+  status         String    @default("pending") // pending | merged | dismissed
+  mergedAt       DateTime?
+  mergedById     String?
+  mergeRecordId  String?
+  dismissedAt    DateTime?
+  dismissedById  String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  dealer      Dealer               @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+  mergeRecord CustomerMergeRecord? @relation(fields: [mergeRecordId], references: [id], onDelete: SetNull)
+
+  @@unique([dealerId, entityType, entityAId, entityBId])
+  @@index([dealerId])
+  @@index([dealerId, status])
+  @@index([dealerId, classification])
+  @@index([entityType, entityAId])
+  @@index([entityType, entityBId])
+  @@index([createdAt])
+  @@map("duplicate_detection_log")
+}
+
+/// CustomerMergeRecord — audit record of every customer merge and
+/// its unmerge history. Recoverable for 30 days after `mergedAt`.
+model CustomerMergeRecord {
+  id               String    @id @default(cuid())
+  dealerId         String
+  masterId         String // the kept customer
+  duplicateId      String // the soft-deleted customer
+  fieldChoices     Json // { firstName: 'master'|'duplicate', email: ..., ... }
+  // Snapshot of pre-merge values so we can unmerge deterministically
+  masterBefore     Json?
+  duplicateBefore  Json?
+  mergedById       String
+  mergedAt         DateTime  @default(now())
+  unmergedAt       DateTime?
+  unmergedById     String?
+  recoverable      Boolean   @default(true)
+  recoveryDeadline DateTime?
+  // Counts of related records that were reassigned
+  movedCounts      Json? // { deals: 3, leads: 1, appointments: 5, ... }
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  dealer        Dealer                  @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+  master        Customer                @relation("MergeMaster", fields: [masterId], references: [id])
+  duplicate     Customer                @relation("MergeDuplicate", fields: [duplicateId], references: [id])
+  mergedBy      User                    @relation("MergeActor", fields: [mergedById], references: [id])
+  duplicateLogs DuplicateDetectionLog[]
+
+  @@index([dealerId])
+  @@index([dealerId, mergedAt])
+  @@index([masterId])
+  @@index([duplicateId])
+  @@index([mergedById])
+  @@map("customer_merge_records")
+}
+
+// ============================================================
+// NOTIFICATIONS — per-user inbox, pushed via WebSocket
+// ============================================================
+
+/// Notification — per-user inbox entry. Persisted so a user can
+/// re-read the bell panel after a refresh; pushed live via the
+/// WebSocket layer when first created. Multi-tenant scoped through
+/// `dealerId`; the FK to User is `onDelete: Cascade` so a user-delete
+/// purges their inbox.
+model Notification {
+  id         String              @id @default(cuid())
+  dealerId   String
+  userId     String
+  type       NotificationType
+  title      String
+  body       String
+  entityType NotificationEntity? // 'lead' | 'deal' | 'customer' | 'vehicle' | 'appointment' | 'test_drive' | 'system'
+  entityId   String?
+  metadata   Json?               @default("{}")
+  isRead     Boolean             @default(false)
+  readAt     DateTime?
+  createdAt  DateTime            @default(now())
+
+  // Relations
+  dealer Dealer @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Hot path: bell badge for the current user (unread count).
+  @@index([userId, isRead])
+  // List-by-time for the inbox panel.
+  @@index([userId, createdAt])
+  // Tenant audits + cross-tenant guards.
+  @@index([dealerId])
+  @@index([dealerId, createdAt])
+  // Filter by type for the "by source" tab in the panel.
+  @@index([userId, type])
+  @@map("notifications")
+}
+
+/// NotificationType — canonical verb for the notification. Mirrors
+/// the WebSocket `notification` event's `type` field so clients can
+/// route on it directly.
+enum NotificationType {
+  LEAD_ASSIGNED
+  LEAD_CREATED
+  LEAD_STATUS_CHANGED
+  CUSTOMER_CREATED
+  DEAL_STAGE_CHANGED
+  DEAL_DELIVERED
+  VEHICLE_SOLD
+  VEHICLE_PRICE_CHANGED
+  TEST_DRIVE_SCHEDULED
+  TEST_DRIVE_COMPLETED
+  APPOINTMENT_REMINDER
+  SYSTEM
+}
+
+enum NotificationEntity {
+  LEAD
+  CUSTOMER
+  DEAL
+  VEHICLE
+  APPOINTMENT
+  TEST_DRIVE
+  USER
+  SYSTEM
+}
+
+// ============================================================
+// PUBLIC DEALER WEBSITE
+// ============================================================
+
+/// DealerWebsite — per-dealer white-label marketing site served at
+/// `{subdomain}.dealeros.com` (or a CNAME'd custom domain). One row
+/// per dealer, optional until they publish.
+///
+/// `themeConfig` controls the visual layer (logo, brand colors, hero
+/// copy, footer links, font family). `seoConfig` controls meta tags,
+/// OpenGraph image, and analytics. Both are JSON so we can extend
+/// the schema without Prisma migrations.
+model DealerWebsite {
+  id        String @id @default(cuid())
+  dealerId  String @unique
+  subdomain String @unique
+
+  // Display / branding
+  themeConfig Json @default("{}")
+  // {
+  //   logo: string | null,
+  //   primaryColor: string,   // hex
+  //   accentColor: string,    // hex
+  //   heroImage: string | null,
+  //   heroTitle: string,
+  //   heroSubtitle: string,
+  //   heroCtaText: string,
+  //   heroCtaHref: string,
+  //   aboutText: string,
+  //   footerLinks: Array<{ label: string, href: string }>,
+  //   fontFamily: string,
+  //   address: { line1, line2?, city, region, postal, country },
+  //   phone: string,
+  //   email: string,
+  //   hours: Array<{ day: string, open: string, close: string }>
+  // }
+
+  // SEO / analytics
+  seoConfig Json @default("{}")
+  // {
+  //   title: string,
+  //   description: string,
+  //   keywords: string[],
+  //   ogImage: string | null,
+  //   googleAnalyticsId: string | null,
+  //   facebookPixelId: string | null,
+  //   hreflang: Array<{ lang: string, url: string }>
+  // }
+
+  // Optional custom domain (CNAME) — e.g. www.mountainviewauto.com
+  customDomain String? @unique
+
+  // Publishing + telemetry
+  isPublished Boolean @default(false)
+  viewCount   Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  dealer Dealer @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+
+  @@index([subdomain])
+  @@index([isPublished])
+  @@index([customDomain])
+  @@map("dealer_websites")
+}
+
+// ============================================================
+// MARKETING CAMPAIGNS — drip sequences / lead nurturing
+// (AdaptUs DMS Module 7 — Marketing Automation)
+// ============================================================
+
+/// Campaign — a multi-step marketing automation that runs a
+/// pre-defined sequence of channel-based steps (email, SMS, wait,
+/// branch) against an enrolled audience. Lifecycle:
+///
+///   DRAFT → ACTIVE → PAUSED → ACTIVE → ARCHIVED
+///
+/// Multi-tenant: every campaign is scoped by `dealerId`. The owner
+/// (`createdById`) is recorded for audit + RBAC; it does NOT have to
+/// match the executing user (delegated scheduling is allowed for
+/// manager+ roles).
+///
+/// `triggerType` and `triggerConfig` define the "what enrolls a
+/// record" rule. The CampaignTriggerService listens to BullMQ events
+/// and evaluates these rules per dealer in real time.
+model Campaign {
+  id          String         @id @default(cuid())
+  dealerId    String
+  createdById String
+  name        String
+  description String?
+  status      CampaignStatus @default(DRAFT)
+  // What fires enrollment. Pair with `triggerConfig` JSON.
+  triggerType CampaignTriggerType
+  // Free-form rule definition (structure depends on triggerType):
+  //   lead_created  → {} (any new lead)
+  //   status_change → { from: "NEW", to: "CONTACTED" }
+  //   no_activity   → { days: 14 }
+  //   deal_stage    → { stage: "DELIVERED" }
+  //   appointment   → { type: "TEST_DRIVE", status: "COMPLETED" }
+  //   score_change  → { classification: "hot" }
+  //   birthday      → { daysBefore: 7 }
+  //   vehicle_match → { make: "Toyota", model: "RAV4" }
+  //   manual        → {} (operator only)
+  //   api           → {} (external system)
+  triggerConfig Json          @default("{}")
+  // Audience filter — same shape as the Lead list filter. Applied at
+  // enrollment time AND for "backfill" runs of a manual campaign.
+  audience Json              @default("{}")
+  // Stats — denormalised, refreshed on every step completion.
+  enrolledCount  Int @default(0)
+  activeCount    Int @default(0)
+  completedCount Int @default(0)
+  exitedCount    Int @default(0)
+  failedCount    Int @default(0)
+  // When the campaign was last activated (for cooldown logic).
+  activatedAt DateTime?
+  pausedAt    DateTime?
+  archivedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  dealer      Dealer                @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+  createdBy   User                  @relation("CampaignOwner", fields: [createdById], references: [id], onDelete: Cascade)
+  steps       CampaignStep[]
+  enrollments CampaignEnrollment[]
+
+  // Tenant scoping + active-campaign lookups.
+  @@index([dealerId])
+  @@index([dealerId, status])
+  @@index([dealerId, triggerType])
+  @@index([status, activatedAt])
+  @@map("campaigns")
+}
+
+/// CampaignStatus — workflow state of a campaign.
+enum CampaignStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  ARCHIVED
+}
+
+/// CampaignTriggerType — which domain event auto-enrolls records.
+enum CampaignTriggerType {
+  LEAD_CREATED
+  LEAD_UPDATED
+  STATUS_CHANGE
+  NO_ACTIVITY
+  DEAL_STAGE
+  APPOINTMENT
+  SCORE_CHANGE
+  BIRTHDAY
+  VEHICLE_MATCH
+  MANUAL
+  API
+}
+
+/// CampaignStep — a single ordered step inside a campaign.
+///
+/// `stepType` decides how the step processor behaves:
+///   EMAIL       → send a templated email (SendGrid)
+///   SMS         → send a templated SMS (Twilio)
+///   WAIT        → pause the enrollment for `waitHours` hours
+///   BRANCH      → split on a field condition (one of `branchConfig.thenStep` / `branchConfig.elseStep`)
+///   WEBHOOK     → POST to an external URL with the enrollment payload
+///   TASK        → create an internal "follow up" task assigned to a rep
+///   EXIT        → gracefully end the enrollment
+///
+/// `order` is the zero-based index inside the campaign. For the
+/// `BRANCH` step, `branchConfig` carries the predicate; for
+/// `WAIT`, `waitHours` is the duration. For EMAIL/SMS, `template` is
+/// the subject+body (with `{{first_name}}` placeholders) and
+/// `fromAddress` is the sender override.
+model CampaignStep {
+  id          String         @id @default(cuid())
+  campaignId  String
+  // Order within the campaign, 0-based.
+  order       Int
+  // Display name for the step in the editor UI.
+  name        String
+  stepType    CampaignStepType
+  // The body / subject for EMAIL, message for SMS, etc.
+  // Supports `{{first_name}}`, `{{last_name}}`, `{{email}}`,
+  // `{{phone}}`, `{{dealership_name}}`, `{{agent_name}}` etc.
+  template    String?
+  subject     String? // For EMAIL — separate from body
+  // For WAIT steps.
+  waitHours   Int?           @default(0)
+  // For BRANCH steps: { field: "currentScore", op: ">=", value: 60, thenStep: 3, elseStep: 5 }
+  branchConfig Json?         @default("{}")
+  // For WEBHOOK steps.
+  webhookUrl  String?
+  webhookMethod String?      @default("POST")
+  // For TASK steps: which user role / specific user to assign to.
+  taskAssignToId String?
+  // Override sender for EMAIL.
+  fromAddress String?
+  // Skip on weekends? (for B2B-style steps).
+  skipWeekends Boolean       @default(false)
+  // Free-form metadata (e.g. A/B variant id, link tracking params).
+  metadata    Json           @default("{}")
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  // Relations
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@unique([campaignId, order])
+  @@index([campaignId])
+  @@map("campaign_steps")
+}
+
+/// CampaignStepType — kinds of steps a campaign can run.
+enum CampaignStepType {
+  EMAIL
+  SMS
+  WAIT
+  BRANCH
+  WEBHOOK
+  TASK
+  EXIT
+}
+
+/// CampaignEnrollment — one record (lead or customer) enrolled in a
+/// campaign. The state machine lives in `status`; the runtime cursor
+/// is `currentStepOrder`.
+///
+/// Lifecycle (most common path):
+///   PENDING  →  ACTIVE  →  COMPLETED
+///                     └──> EXITED       (user unsubscribed / branch off-path)
+///                     └──> FAILED       (channel error, retried < maxAttempts)
+///
+/// `nextRunAt` is the wall-clock time the next WAIT/EMAIL/SMS step
+/// becomes eligible. The step-processor service polls BullMQ delayed
+/// jobs on this column.
+model CampaignEnrollment {
+  id           String                 @id @default(cuid())
+  dealerId     String
+  campaignId   String
+  // Subject of the enrollment (the lead or customer being nurtured).
+  leadId       String?
+  customerId   String?
+  // Audit: who/what triggered the enrollment.
+  enrolledById String?
+  triggerType  CampaignTriggerType
+  triggerPayload Json                @default("{}")
+  // Runtime state.
+  status       CampaignEnrollmentStatus @default(PENDING)
+  currentStepOrder Int                @default(0)
+  nextRunAt    DateTime?
+  // Counters (denormalised from CampaignStepExecution rows).
+  stepsExecuted Int                   @default(0)
+  stepsFailed   Int                   @default(0)
+  emailsSent    Int                   @default(0)
+  smsSent       Int                   @default(0)
+  // Idempotency: external provider message ids (per step).
+  lastExternalIds Json                @default("{}")
+  // Error bookkeeping (most recent failure).
+  lastError    String?
+  attemptCount Int                    @default(0)
+  // Lifecycle timestamps.
+  enrolledAt   DateTime               @default(now())
+  startedAt    DateTime?
+  completedAt  DateTime?
+  exitedAt     DateTime?
+  failedAt     DateTime?
+  updatedAt    DateTime               @updatedAt
+
+  // Relations
+  dealer     Dealer              @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+  campaign   Campaign            @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  lead       Lead?               @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  customer   Customer?           @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  enrolledBy User?               @relation("EnrollmentActor", fields: [enrolledById], references: [id], onDelete: SetNull)
+  executions CampaignStepExecution[]
+
+  // Idempotency: never enroll the same (campaign, lead/customer) twice.
+  // The partial-unique below is modelled by separate indexes since
+  // PostgreSQL treats NULLs as distinct in unique constraints.
+  @@index([dealerId])
+  @@index([dealerId, status])
+  @@index([campaignId, status])
+  @@index([leadId])
+  @@index([customerId])
+  @@index([status, nextRunAt])
+  @@index([dealerId, campaignId, leadId])
+  @@index([dealerId, campaignId, customerId])
+  @@map("campaign_enrollments")
+}
+
+/// CampaignEnrollmentStatus — state of a single enrollment.
+enum CampaignEnrollmentStatus {
+  PENDING
+  ACTIVE
+  PAUSED
+  COMPLETED
+  EXITED
+  FAILED
+}
+
+/// CampaignStepExecution — append-only log of every step the processor
+/// ran for an enrollment. Used for analytics, debugging, and replay.
+model CampaignStepExecution {
+  id           String                 @id @default(cuid())
+  dealerId     String
+  enrollmentId String
+  stepId       String
+  stepOrder    Int
+  stepType     CampaignStepType
+  status       CampaignStepExecutionStatus @default(PENDING)
+  // Provider response (SendGrid / Twilio messageId, HTTP status, etc.).
+  externalId   String?
+  errorMessage String?
+  attempts     Int                    @default(0)
+  durationMs   Int?
+  // Snapshot of the rendered body that was actually sent (after
+  // template substitution). Useful for compliance + debugging.
+  renderedBody String?
+  renderedSubject String?
+  startedAt    DateTime               @default(now())
+  completedAt  DateTime?
+
+  // Relations
+  enrollment CampaignEnrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+
+  @@index([enrollmentId])
+  @@index([dealerId, status])
+  @@index([dealerId, startedAt])
+  @@index([stepId])
+  @@map("campaign_step_executions")
+}
+
+/// CampaignStepExecutionStatus — outcome of one step run.
+enum CampaignStepExecutionStatus {
+  PENDING
+  RUNNING
+  SENT
+  DELIVERED
+  SKIPPED
+  FAILED
+}
+
+// ============================================================
+// CALENDAR — Events / Appointments (general-purpose)
+// ============================================================
+
+/// CalendarEvent — general-purpose calendar events for the dealer team.
+/// Distinct from `Appointment` which is lead/customer scoped; these events
+/// can represent team meetings, company holidays, service bay slots, or
+/// any ad-hoc time block.
+model CalendarEvent {
+  id          String             @id @default(cuid())
+  dealerId    String
+  userId      String?
+  title       String
+  description String?
+  type        CalendarEventType
+  start       DateTime
+  end         DateTime
+  allDay      Boolean            @default(false)
+  /// Optional link to a CRM entity (lead, customer, vehicle, deal, appointment).
+  entityType  String?
+  entityId    String?
+  color       String             @default("#6366f1")
+  location    String?
+  reminderAt  DateTime?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  // Relations
+  dealer Dealer @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+
+  @@index([dealerId])
+  @@index([dealerId, start, end])
+  @@index([userId])
+  @@index([entityType, entityId])
+  @@map("calendar_events")
+}
+
+enum CalendarEventType {
+  MEETING
+  SHOWING
+  SERVICE
+  TEAM_EVENT
+  COMPANY_HOLIDAY
+  TRAINING
+  REMINDER
+  BLOCKED_TIME
+}
+

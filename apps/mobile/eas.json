@@ -1,0 +1,59 @@
+{
+  "cli": {
+    "version": ">= 12.0.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "base": {
+      "node": "22.11.0",
+      "env": {
+        "EXPO_PUBLIC_API_BASE_URL": "http://localhost:3001"
+      }
+    },
+    "development": {
+      "extends": "base",
+      "developmentClient": true,
+      "distribution": "internal",
+      "ios": {
+        "simulator": true,
+        "bundleIdentifier": "com.dealeros.app.dev"
+      },
+      "android": {
+        "gradleCommand": ":app:assembleDebug",
+        "applicationId": "com.dealeros.app.dev"
+      }
+    },
+    "preview": {
+      "extends": "base",
+      "distribution": "internal",
+      "channel": "preview",
+      "ios": {
+        "bundleIdentifier": "com.dealeros.app.preview"
+      },
+      "android": {
+        "applicationId": "com.dealeros.app.preview"
+      }
+    },
+    "production": {
+      "extends": "base",
+      "channel": "production",
+      "autoIncrement": true,
+      "ios": {
+        "bundleIdentifier": "com.dealeros.app"
+      },
+      "android": {
+        "applicationId": "com.dealeros.app"
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "ascAppId": "REPLACE_WITH_APP_STORE_CONNECT_ID"
+      },
+      "android": {
+        "serviceAccountKeyPath": "./secrets/play-service-account.json"
+      }
+    }
+  }
+}
