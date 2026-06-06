@@ -1,5 +1,6 @@
-import * as React from "react";
 "use client";
+
+import * as React from "react";
 
 /**
  * Activity Logs & Audit Trail page (DMS Module 10.2).
