@@ -1,5 +1,6 @@
-import * as React from "react";
 "use client";
+
+import * as React from "react";
 
 /**
  * DiffViewer — side-by-side before/after JSON viewer for an
