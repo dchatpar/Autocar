@@ -1,9 +1,9 @@
 import type { CampaignFormData } from "@/types/api";
 
-export { CAMPAIGN_INITIAL };
 export type { CampaignFormData };
 
-export const CAMPAIGN_INITIAL: CampaignFormData = {
+// NOTE: exported as default to avoid Next.js 15 flight-loader re-export conflict
+const CAMPAIGN_INITIAL: CampaignFormData = {
   name: "",
   description: "",
   triggerType: null,
@@ -14,3 +14,5 @@ export const CAMPAIGN_INITIAL: CampaignFormData = {
   },
   steps: [],
 };
+
+export default CAMPAIGN_INITIAL;
