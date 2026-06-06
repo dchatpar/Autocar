@@ -50,17 +50,7 @@ export interface CampaignFormData {
   steps: CampaignStepInput[];
 }
 
-export const CAMPAIGN_INITIAL: CampaignFormData = {
-  name: "",
-  description: "",
-  triggerType: null,
-  triggerConfig: {},
-  audience: {
-    includeCustomers: true,
-    maxEnroll: 500,
-  },
-  steps: [],
-};
+import { CAMPAIGN_INITIAL } from "./campaign-data";
 
 /* ------------------------------------------------------------------ */
 /* Per-step validation schemas                                         */
