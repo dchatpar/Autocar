@@ -1,4 +1,4 @@
-import type { CampaignFormData, CampaignStepInput } from "@/types/api";
+import type { CampaignFormData } from "@/types/api";
 
 export { CAMPAIGN_INITIAL };
 export type { CampaignFormData };

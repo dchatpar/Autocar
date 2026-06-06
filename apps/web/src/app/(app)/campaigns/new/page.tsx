@@ -50,7 +50,7 @@ export interface CampaignFormData {
   steps: CampaignStepInput[];
 }
 
-import { CAMPAIGN_INITIAL } from "./campaign-data";
+import { CAMPAIGN_INITIAL } from "@/data/campaign-data";
 
 /* ------------------------------------------------------------------ */
 /* Per-step validation schemas                                         */
