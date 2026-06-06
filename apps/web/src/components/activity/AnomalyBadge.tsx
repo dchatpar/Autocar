@@ -1,5 +1,6 @@
-import * as React from "react";
 "use client";
+
+import * as React from "react";
 
 /**
  * AnomalyBadge — compact, accessible indicator for suspicious
