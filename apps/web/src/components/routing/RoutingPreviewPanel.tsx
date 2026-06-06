@@ -51,9 +51,9 @@ export function RoutingPreviewPanel() {
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        <label className="text-xs font-medium text-text-muted uppercase tracking-wide">
+        <span className="text-xs font-medium text-text-muted uppercase tracking-wide">
           Simulate an incoming lead
-        </label>
+        </span>
         <div className="grid grid-cols-1 sm:grid-cols-[1fr_2fr_120px_auto] gap-2">
           <Select
             options={SAMPLE_SOURCES}
