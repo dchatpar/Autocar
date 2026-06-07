@@ -1,5 +1,0 @@
-{
-  "framework": "nextjs",
-  "installCommand": "CI=true pnpm install --no-frozen-lockfile",
-  "buildCommand": "pnpm --filter=@dealeros/shared build && pnpm build"
-}
