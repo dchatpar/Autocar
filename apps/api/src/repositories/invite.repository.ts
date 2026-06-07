@@ -9,6 +9,7 @@
  */
 
 import { randomBytes } from "node:crypto";
+
 import { redis } from "../utils/redis.js";
 import { NotFoundError } from "../utils/errors.js";
 

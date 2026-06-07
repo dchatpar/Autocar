@@ -21,6 +21,8 @@
  * `take: 50` candidates per record.
  */
 
+import type { Customer, Lead, Prisma } from "@prisma/client";
+
 import { prisma } from "../utils/prisma.js";
 import { toE164 } from "../utils/phone.js";
 import {
@@ -28,7 +30,6 @@ import {
   normalizeForCompare,
   NAME_MATCH_THRESHOLD,
 } from "../utils/string-similarity.js";
-import type { Customer, Lead, Prisma } from "@prisma/client";
 
 /* ============================================================
  * Configuration

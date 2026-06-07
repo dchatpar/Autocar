@@ -18,6 +18,8 @@
 
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { z } from "zod";
+import type { Customer, Prisma } from "@prisma/client";
+
 import { prisma } from "../utils/prisma.js";
 import { validateBody, validateQuery } from "../utils/validate.js";
 import { NotFoundError, ValidationError } from "../utils/errors.js";
@@ -31,7 +33,6 @@ import {
   MergeRequestSchema,
   PreviewMergeRequestSchema,
 } from "../schemas/duplicate.schema.js";
-import type { Customer, Prisma } from "@prisma/client";
 
 /* ============================================================
  * Helpers — record shape conversion for the API

@@ -24,6 +24,7 @@
  */
 
 import type { Activity, Communication, Lead, Prisma } from "@prisma/client";
+
 import { prisma } from "../utils/prisma.js";
 import { leadScorer, type ScoreContext, type ScoreResult } from "./lead-scorer.service.js";
 import { logger } from "../utils/logger.js";

@@ -27,6 +27,8 @@
  */
 
 import type { Prisma } from "@prisma/client";
+import { z } from "zod";
+
 import { prisma } from "../utils/prisma.js";
 import {
   CampaignTriggerEventSchema,
@@ -34,7 +36,6 @@ import {
   type CampaignTriggerEvent,
 } from "../schemas/campaign.schema.js";
 import { campaignQueue } from "../queues/campaign.queue.js";
-import { z } from "zod";
 
 /* ============================================================
  * Logger

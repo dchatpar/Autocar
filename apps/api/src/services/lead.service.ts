@@ -11,6 +11,7 @@
  */
 
 import type { Lead, LeadStatus, Prisma } from "@prisma/client";
+
 import { prisma as defaultPrisma } from "../utils/prisma.js";
 import {
   ForbiddenError,

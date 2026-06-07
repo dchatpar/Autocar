@@ -7,6 +7,8 @@
  */
 
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import type { UserRole } from "@prisma/client";
+
 import {
   AcceptInviteBodySchema,
   InviteBodySchema,
@@ -19,7 +21,6 @@ import { validateBody } from "../utils/validate.js";
 import { authService, toPublicUser } from "../services/auth.service.js";
 import { userRepository } from "../repositories/user.repository.js";
 import { NotFoundError } from "../utils/errors.js";
-import type { UserRole } from "@prisma/client";
 
 interface AccessPayload {
   userId: string;

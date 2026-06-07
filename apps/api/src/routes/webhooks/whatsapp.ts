@@ -25,6 +25,9 @@
  */
 
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import type { Dealer, Lead, Prisma } from "@prisma/client";
+import { ZodError } from "zod";
+
 import { prisma } from "../../utils/prisma.js";
 import { verifyHmacSignature, getSignatureHeader } from "../../utils/hmac.js";
 import { toE164 } from "../../utils/phone.js";
@@ -32,10 +35,9 @@ import {
   WhatsAppPayloadSchema,
   WhatsAppVerifyQuerySchema,
 } from "../../schemas/webhook.schema.js";
-import type { Dealer, Lead, Prisma } from "@prisma/client";
 import { novaService } from "../../services/nova-stub.service.js";
 import { fireAndForget as fireLeadDuplicateCheck } from "../../hooks/on-lead-ingest.js";
-import { ZodError } from "zod";
+
 
 /**
  * Look up the dealer that owns the given phone_number_id.

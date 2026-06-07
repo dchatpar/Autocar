@@ -15,6 +15,8 @@
  */
 
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import type { UserRole } from "@prisma/client";
+
 import { prisma } from "../utils/prisma.js";
 import { validateBody, validateQuery } from "../utils/validate.js";
 import {
@@ -25,7 +27,6 @@ import {
 import { decodeVin } from "../integrations/nhtsa/client.js";
 import { vehicleService } from "../services/vehicle.service.js";
 import { NotFoundError } from "../utils/errors.js";
-import type { UserRole } from "@prisma/client";
 
 interface AccessPayload {
   userId: string;

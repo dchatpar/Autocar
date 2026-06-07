@@ -34,7 +34,7 @@ export async function runPurge(): Promise<{ deleted: number }> {
 
   // Loop until deleteMany returns 0. We do this in batches so we
   // don't hold a single huge write lock.
-  // eslint-disable-next-line no-constant-condition
+   
   while (true) {
     const expired = await prisma.activityLog.findMany({
       where: { createdAt: { lt: cutoff } },

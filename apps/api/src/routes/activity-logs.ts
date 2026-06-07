@@ -18,6 +18,7 @@
  */
 
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+
 import { prisma } from "../utils/prisma.js";
 import {
   ActivityLogIdParamSchema,

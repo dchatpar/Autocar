@@ -40,6 +40,7 @@ import {
   type JobsOptions,
   type ConnectionOptions,
 } from "bullmq";
+
 import { prisma } from "../utils/prisma.js";
 import { campaignTriggers, type CampaignTriggerEvent } from "../services/campaign-trigger.service.js";
 import { campaignStepProcessor } from "../services/campaign-step-processor.service.js";
@@ -78,17 +79,17 @@ export interface SweepJobData {
  * ============================================================ */
 
 declare global {
-  // eslint-disable-next-line no-var
+   
   var __dealerosCampaignTriggerQueue: Queue<TriggerJobData> | undefined;
-  // eslint-disable-next-line no-var
+   
   var __dealerosCampaignStepQueue: Queue<StepJobData> | undefined;
-  // eslint-disable-next-line no-var
+   
   var __dealerosCampaignSweepQueue: Queue<SweepJobData> | undefined;
-  // eslint-disable-next-line no-var
+   
   var __dealerosCampaignTriggerWorker: Worker<TriggerJobData> | undefined;
-  // eslint-disable-next-line no-var
+   
   var __dealerosCampaignStepWorker: Worker<StepJobData> | undefined;
-  // eslint-disable-next-line no-var
+   
   var __dealerosCampaignSweepWorker: Worker<SweepJobData> | undefined;
 }
 

@@ -1,6 +1,7 @@
 import globals from 'globals'
 import pluginJs from '@eslint/js'
 import tseslint from 'typescript-eslint'
+import importPlugin from 'eslint-plugin-import-x'
 
 export default [
   {
@@ -10,6 +11,7 @@ export default [
   pluginJs.configs.recommended,
   ...tseslint.configs.recommended,
   {
+    plugins: { import: importPlugin },
     rules: {
       'no-console': 'warn',
       'no-unused-vars': 'off',

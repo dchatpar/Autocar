@@ -92,7 +92,7 @@ function authHeader(accountSid: string, authToken: string): string {
     return `Basic ${Buffer.from(raw, "utf-8").toString("base64")}`;
   }
   // Browser-safe fallback (Bun / Deno / workers).
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const b64 = (globalThis as { btoa?: (s: string) => string }).btoa;
   if (b64) return `Basic ${b64(raw)}`;
   return `Basic ${raw}`;

@@ -16,6 +16,7 @@
 
 import type { FastifyBaseLogger } from "fastify";
 import type { Customer } from "@prisma/client";
+
 import {
   duplicateDetector,
   type DuplicateMatch,

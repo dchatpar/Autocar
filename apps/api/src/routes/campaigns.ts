@@ -22,6 +22,8 @@
  */
 
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import type { UserRole } from "@prisma/client";
+
 import {
   CampaignIdParamsSchema,
   CreateCampaignBodySchema,
@@ -35,7 +37,6 @@ import {
 } from "../schemas/campaign.schema.js";
 import { validateBody, validateParams, validateQuery } from "../utils/validate.js";
 import { campaignService } from "../services/campaign.service.js";
-import type { UserRole } from "@prisma/client";
 
 interface AccessPayload {
   userId: string;

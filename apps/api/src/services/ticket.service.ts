@@ -7,6 +7,7 @@
  */
 
 import type { Prisma, Ticket, TicketIssuePriority, TicketStatus } from "@prisma/client";
+
 import { prisma } from "../utils/prisma.js";
 import { NotFoundError } from "../utils/errors.js";
 import { withAuditContext, logActivity, type AuditContext } from "./activity-logger.service.js";

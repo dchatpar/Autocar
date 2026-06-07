@@ -8,6 +8,7 @@
  */
 
 import type { Prisma, Vehicle, VehicleCondition, VehicleStatus } from "@prisma/client";
+
 import { prisma as defaultPrisma } from "../utils/prisma.js";
 import {
   ConflictError,

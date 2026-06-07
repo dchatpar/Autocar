@@ -55,6 +55,7 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { z } from "zod";
+
 import { signatureService } from "../../services/signature.service.js";
 import { prisma } from "../../utils/prisma.js";
 

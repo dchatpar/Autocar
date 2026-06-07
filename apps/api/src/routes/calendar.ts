@@ -9,6 +9,7 @@
  */
 
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+
 import {
   CreateCalendarEventBodySchema,
   UpdateCalendarEventBodySchema,

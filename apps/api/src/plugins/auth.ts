@@ -14,6 +14,7 @@ import fp from "fastify-plugin";
 import jwtPlugin from "@fastify/jwt";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import type { UserRole } from "@prisma/client";
+
 import { AuthError, ForbiddenError } from "../utils/errors.js";
 
 export interface AccessPayload {

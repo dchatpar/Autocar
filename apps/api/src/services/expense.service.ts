@@ -10,6 +10,7 @@
  */
 
 import type { Note, Prisma } from "@prisma/client";
+
 import { prisma as defaultPrisma } from "../utils/prisma.js";
 import { ValidationError } from "../utils/errors.js";
 import { withAuditContext, logActivity, type AuditContext } from "./activity-logger.service.js";

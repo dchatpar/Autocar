@@ -12,6 +12,7 @@
  */
 
 import { Queue, Worker, QueueEvents, type Job, type ConnectionOptions } from "bullmq";
+
 import { prisma } from "../utils/prisma.js";
 
 /* ============================================================
@@ -39,9 +40,9 @@ export const REMINDER_QUEUE = "reminder";
  * ============================================================ */
 
 declare global {
-  // eslint-disable-next-line no-var
+   
   var __dealerosReminderQueue: Queue<ReminderJobData> | undefined;
-  // eslint-disable-next-line no-var
+   
   var __dealerosReminderWorker: Worker<ReminderJobData> | undefined;
 }
 

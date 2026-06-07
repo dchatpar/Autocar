@@ -10,6 +10,7 @@ import Fastify, { type FastifyInstance } from "fastify";
 import corsPlugin from "@fastify/cors";
 import cookiePlugin from "@fastify/cookie";
 import rateLimitPlugin from "@fastify/rate-limit";
+
 import authPlugin from "./plugins/auth.js";
 import tenantPlugin from "./plugins/tenant.js";
 import errorPlugin from "./plugins/error.js";

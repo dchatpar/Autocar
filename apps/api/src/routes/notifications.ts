@@ -17,6 +17,7 @@
 
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import type { UserRole } from "@prisma/client";
+
 import { validateQuery, validateParams } from "../utils/validate.js";
 import {
   ListNotificationsQuerySchema,

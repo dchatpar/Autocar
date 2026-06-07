@@ -7,6 +7,7 @@
 
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { z } from "zod";
+
 import { validateBody, validateParams } from "../utils/validate.js";
 import { NotFoundError, ConflictError } from "../utils/errors.js";
 

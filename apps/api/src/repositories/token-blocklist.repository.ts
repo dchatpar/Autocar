@@ -7,6 +7,7 @@
  */
 
 import { createHash } from "node:crypto";
+
 import { redis } from "../utils/redis.js";
 
 function hashToken(token: string): string {

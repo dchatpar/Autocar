@@ -14,6 +14,7 @@
 
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { z } from "zod";
+
 import { validateBody, validateParams, validateQuery } from "../utils/validate.js";
 import { testDriveService } from "../services/test-drive.service.js";
 import { NotFoundError } from "../utils/errors.js";

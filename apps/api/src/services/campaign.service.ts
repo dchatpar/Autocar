@@ -19,6 +19,8 @@
 
 import type { Campaign, CampaignStep } from "@prisma/client";
 import { Prisma } from "@prisma/client";
+import type { z } from "zod";
+
 import { prisma } from "../utils/prisma.js";
 import {
   ConflictError,
@@ -33,7 +35,6 @@ import {
   UpdateCampaignBodySchema,
   EnrollLeadsBodySchema,
 } from "../schemas/campaign.schema.js";
-import type { z } from "zod";
 
 type CreateCampaignBody = z.infer<typeof CreateCampaignBodySchema>;
 type UpdateCampaignBody = z.infer<typeof UpdateCampaignBodySchema>;

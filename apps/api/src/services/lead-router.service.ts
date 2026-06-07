@@ -22,6 +22,7 @@
  */
 
 import type { Dealer, Lead, Prisma, User } from "@prisma/client";
+
 import { prisma } from "../utils/prisma.js";
 import {
   DealerRoutingSettingsSchema,

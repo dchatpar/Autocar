@@ -27,6 +27,7 @@
  */
 
 import { createHash } from "node:crypto";
+
 import { envOr, resolveCredential } from "../shared/credentials.js";
 
 const API_BASE = process.env.WHATSAPP_CLOUD_API_BASE ?? "https://graph.facebook.com";

@@ -19,6 +19,7 @@
  */
 
 import type { DealerWebsite, Prisma } from "@prisma/client";
+
 import { prisma as defaultPrisma } from "../utils/prisma.js";
 import { dealerRepository } from "../repositories/dealer.repository.js";
 import { dealerWebsiteRepository } from "../repositories/dealer-website.repository.js";

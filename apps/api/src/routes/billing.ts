@@ -19,6 +19,7 @@
 
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import type { UserRole } from "@prisma/client";
+
 import {
   CreateCheckoutBodySchema,
   CreatePortalBodySchema,

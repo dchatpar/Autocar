@@ -23,6 +23,7 @@
  */
 
 import type { Dealer, Lead } from "@prisma/client";
+
 import { whatsAppClient } from "../integrations/whatsapp/client.js";
 
 export type NovaChannel = "whatsapp" | "sms" | "email" | "none";

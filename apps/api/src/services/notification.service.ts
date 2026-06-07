@@ -18,6 +18,7 @@
  */
 
 import type { Notification, Prisma } from "@prisma/client";
+
 import { prisma as defaultPrisma } from "../utils/prisma.js";
 import { realtimeService } from "./realtime.service.js";
 import { NotFoundError, ValidationError } from "../utils/errors.js";

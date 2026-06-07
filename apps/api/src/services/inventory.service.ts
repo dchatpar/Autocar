@@ -6,6 +6,7 @@
  */
 
 import type { Prisma, Vehicle, VehicleCondition, VehicleStatus } from "@prisma/client";
+
 import { prisma } from "../utils/prisma.js";
 import { NotFoundError, ConflictError, ValidationError } from "../utils/errors.js";
 import { realtimeService } from "./realtime.service.js";

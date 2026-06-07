@@ -11,6 +11,7 @@
  */
 
 import type { Dealer, Lead, Prisma } from "@prisma/client";
+
 import { prisma } from "../utils/prisma.js";
 import { toE164 } from "../utils/phone.js";
 import { routingService } from "./routing.service.js";

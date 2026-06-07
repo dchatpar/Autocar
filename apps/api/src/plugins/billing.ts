@@ -13,6 +13,7 @@
 
 import fp from "fastify-plugin";
 import type { FastifyInstance } from "fastify";
+
 import { stripeWebhookRoutes } from "../routes/webhooks/stripe.js";
 
 const billingPlugin = fp(

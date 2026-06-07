@@ -9,7 +9,7 @@
 import IORedis, { type Redis } from "ioredis";
 
 declare global {
-  // eslint-disable-next-line no-var
+   
   var __dealerosRedis: Redis | null | undefined;
 }
 

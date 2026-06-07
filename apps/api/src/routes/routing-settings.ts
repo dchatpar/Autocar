@@ -11,9 +11,11 @@
  */
 
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import { z } from "zod";
+import type { Dealer, Prisma } from "@prisma/client";
+
 import { prisma } from "../utils/prisma.js";
 import { validateBody, validateQuery } from "../utils/validate.js";
-import { z } from "zod";
 import { UpdateRoutingSettingsSchema } from "../schemas/lead-router.schema.js";
 import {
   DealerRoutingSettingsSchema,
@@ -21,7 +23,7 @@ import {
 } from "../schemas/lead-router.schema.js";
 import { leadRouter, listRoutingLog } from "../services/lead-router.service.js";
 import { NotFoundError } from "../utils/errors.js";
-import type { Dealer, Prisma } from "@prisma/client";
+
 
 const LogQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(200).default(100),

@@ -20,6 +20,7 @@
  */
 
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+
 import {
   CreateDealerWebsiteBodySchema,
   UpdateDealerWebsiteBodySchema,

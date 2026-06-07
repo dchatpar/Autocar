@@ -15,11 +15,12 @@
 
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { z } from "zod";
+import type { Prisma } from "@prisma/client";
+
 import { validateBody, validateParams, validateQuery } from "../utils/validate.js";
 import { customerService } from "../services/customer.service.js";
 import { prisma } from "../utils/prisma.js";
 import { NotFoundError } from "../utils/errors.js";
-import type { Prisma } from "@prisma/client";
 
 /* ============================================================
  * Schemas

@@ -10,8 +10,9 @@
  */
 
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
-import { prisma } from "../utils/prisma.js";
 import type { UserRole } from "@prisma/client";
+
+import { prisma } from "../utils/prisma.js";
 
 interface AccessPayload {
   userId: string;

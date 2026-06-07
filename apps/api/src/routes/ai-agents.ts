@@ -15,6 +15,8 @@
  */
 
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import type { UserRole } from "@prisma/client";
+
 import {
   AgentRunBodySchema,
   ListAgentRunsQuerySchema,
@@ -23,7 +25,6 @@ import {
 } from "../schemas/ai-agent.schema.js";
 import { validateBody, validateParams, validateQuery } from "../utils/validate.js";
 import { aiAgentService } from "../services/ai-agent.service.js";
-import type { UserRole } from "@prisma/client";
 
 interface AccessPayload {
   userId: string;

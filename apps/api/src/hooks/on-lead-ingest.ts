@@ -19,6 +19,7 @@
 
 import type { FastifyBaseLogger } from "fastify";
 import type { Lead } from "@prisma/client";
+
 import { duplicateDetector } from "../services/duplicate-detector.service.js";
 import { logger } from "../utils/logger.js";
 

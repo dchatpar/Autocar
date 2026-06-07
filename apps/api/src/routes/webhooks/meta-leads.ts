@@ -27,16 +27,18 @@
  */
 
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import type { Dealer, Lead, Prisma } from "@prisma/client";
+import { ZodError } from "zod";
+
 import { prisma } from "../../utils/prisma.js";
 import { verifyHmacSignature, getSignatureHeader } from "../../utils/hmac.js";
 import { toE164 } from "../../utils/phone.js";
 import { MetaLeadsPayloadSchema, MetaVerifyQuerySchema } from "../../schemas/webhook.schema.js";
-import type { Dealer, Lead, Prisma } from "@prisma/client";
 import { leadRouter, recordRoutingDecision } from "../../services/lead-router.service.js";
 import { novaService } from "../../services/nova-stub.service.js";
 import { DealerRoutingSettingsSchema } from "../../schemas/lead-router.schema.js";
 import { fireAndForget as fireLeadDuplicateCheck } from "../../hooks/on-lead-ingest.js";
-import { ZodError } from "zod";
+
 
 interface NormalizedLead {
   leadgenId: string;

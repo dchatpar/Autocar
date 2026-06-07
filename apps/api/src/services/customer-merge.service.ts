@@ -26,9 +26,10 @@
  * must belong to the caller's dealer — enforced at the top of each op.
  */
 
+import type { Customer, Prisma } from "@prisma/client";
+
 import { prisma } from "../utils/prisma.js";
 import { NotFoundError, ValidationError, ConflictError } from "../utils/errors.js";
-import type { Customer, Prisma } from "@prisma/client";
 
 /* ============================================================
  * Constants

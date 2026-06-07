@@ -64,7 +64,7 @@ export interface RenderResult {
  * keys like `vehicle.make` are supported.
  * ============================================================ */
 
-const PLACEHOLDER_RE = /\{\{\s*([a-zA-Z_][a-zA-Z0-9_.\-]*)\s*\}\}/g;
+const PLACEHOLDER_RE = /\{\{\s*([a-zA-Z_][a-zA-Z0-9_.-]*)\s*\}\}/g;
 
 function lookup(
   ctx: TemplateContext,

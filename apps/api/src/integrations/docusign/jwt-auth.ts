@@ -54,6 +54,7 @@
 import * as fs from "node:fs";
 import * as crypto from "node:crypto";
 import docusign from "docusign-esign";
+
 import { ServerError } from "../../utils/errors.js";
 
 const DEFAULT_SCOPE = "signature";

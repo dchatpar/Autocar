@@ -12,10 +12,11 @@
  */
 
 import type { FastifyInstance } from "fastify";
+import { z } from "zod";
+
 import { AuthError } from "../utils/errors.js";
 import { signatureService } from "../services/signature.service.js";
 import { DealIdParamSchema } from "../schemas/signature.schema.js";
-import { z } from "zod";
 import { validateParams } from "../utils/validate.js";
 
 function requireTenant(request: { tenant?: { dealerId: string; userId: string; role: string } | null }): { dealerId: string; userId: string; role: string } {

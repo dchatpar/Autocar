@@ -10,6 +10,7 @@
 
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { z } from "zod";
+
 import { validateBody, validateParams, validateQuery } from "../utils/validate.js";
 import { noteService, type NoteEntityType } from "../services/note.service.js";
 import { NotFoundError } from "../utils/errors.js";

@@ -40,6 +40,7 @@
  */
 
 import type { DocumentType, SignatureStatus } from "@prisma/client";
+
 import { ServerError } from "../../utils/errors.js";
 import { type MergeFieldKey } from "../../utils/docusign-merge-fields.js";
 

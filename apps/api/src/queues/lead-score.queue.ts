@@ -17,6 +17,7 @@
  */
 
 import { Queue, Worker, QueueEvents, type Job, type JobsOptions, type ConnectionOptions } from "bullmq";
+
 import { prisma } from "../utils/prisma.js";
 import { leadScoreTriggers, type ScoreTrigger } from "../services/lead-score-triggers.service.js";
 import { logger } from "../utils/logger.js";
@@ -40,9 +41,9 @@ export const LEAD_SCORE_QUEUE = "lead-score";
  * ============================================================ */
 
 declare global {
-  // eslint-disable-next-line no-var
+   
   var __dealerosScoreQueue: Queue<ScoreJobData> | undefined;
-  // eslint-disable-next-line no-var
+   
   var __dealerosScoreWorker: Worker<ScoreJobData> | undefined;
 }
 

@@ -20,12 +20,13 @@
 
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { z } from "zod";
+import type { UserRole, VehicleStatus } from "@prisma/client";
+
 import { prisma } from "../utils/prisma.js";
 import { validateBody, validateParams, validateQuery } from "../utils/validate.js";
 import { inventoryService } from "../services/inventory.service.js";
 import { decodeVin } from "../integrations/nhtsa/client.js";
 import { NotFoundError, ValidationError } from "../utils/errors.js";
-import type { UserRole, VehicleStatus } from "@prisma/client";
 
 interface AccessPayload {
   userId: string;

@@ -7,6 +7,7 @@
  */
 
 import type { Prisma, User, UserRole, UserStatus } from "@prisma/client";
+
 import { prisma } from "../utils/prisma.js";
 
 export interface CreateUserInput {

@@ -9,6 +9,7 @@
  */
 
 import type { Communication, CommunicationChannel, CommunicationDirection, CommunicationStatus } from "@prisma/client";
+
 import { prisma } from "../utils/prisma.js";
 import { toE164 } from "../utils/phone.js";
 import { NotFoundError } from "../utils/errors.js";

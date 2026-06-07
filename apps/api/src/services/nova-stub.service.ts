@@ -11,6 +11,7 @@
  */
 
 import type { Dealer, Lead } from "@prisma/client";
+
 import { prisma } from "../utils/prisma.js";
 import { whatsAppClient } from "../integrations/whatsapp/client.js";
 import { metaCapiClient } from "../integrations/meta-capi/client.js";

@@ -12,10 +12,11 @@
 
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { z } from "zod";
+import type { AppointmentStatus, AppointmentType } from "@prisma/client";
+
 import { validateBody, validateParams, validateQuery } from "../utils/validate.js";
 import { appointmentService } from "../services/appointment.service.js";
 import { NotFoundError } from "../utils/errors.js";
-import type { AppointmentStatus, AppointmentType } from "@prisma/client";
 
 /* ============================================================
  * Schemas

@@ -11,6 +11,7 @@
 
 import fp from "fastify-plugin";
 import type { FastifyInstance, FastifyRequest } from "fastify";
+
 import { prisma } from "../utils/prisma.js";
 import { AuthError } from "../utils/errors.js";
 

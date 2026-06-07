@@ -10,6 +10,7 @@
 
 import type { FastifyInstance } from "fastify";
 import type { User, UserRole } from "@prisma/client";
+
 import {
   AuthError,
   ConflictError,

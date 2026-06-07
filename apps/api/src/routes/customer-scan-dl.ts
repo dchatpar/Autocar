@@ -14,6 +14,8 @@
  */
 
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import type { UserRole } from "@prisma/client";
+
 import { prisma } from "../utils/prisma.js";
 import { validateBody } from "../utils/validate.js";
 import {
@@ -23,7 +25,6 @@ import {
 import { customerService } from "../services/customer.service.js";
 import { scanDriverLicense } from "../integrations/aws-textract/client.js";
 import { dealerRepository } from "../repositories/dealer.repository.js";
-import type { UserRole } from "@prisma/client";
 
 interface AccessPayload {
   userId: string;

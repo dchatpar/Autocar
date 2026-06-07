@@ -29,10 +29,11 @@
  */
 
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import type Stripe from "stripe";
+
 import { verifyWebhookSignature } from "../../integrations/stripe/client.js";
 import { billingService } from "../../services/billing.service.js";
 import { envOr } from "../../integrations/shared/credentials.js";
-import type Stripe from "stripe";
 
 interface WebhookResult {
   received: boolean;

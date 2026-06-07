@@ -32,6 +32,8 @@
  */
 
 import type { FastifyInstance, FastifyRequest } from "fastify";
+import { z } from "zod";
+
 import {
   CreateEnvelopeBodySchema,
   EmbeddedUrlBodySchema,
@@ -51,7 +53,6 @@ import { AuthError } from "../utils/errors.js";
 import { signatureService } from "../services/signature.service.js";
 import { listTemplates } from "../integrations/docusign/templates.js";
 import { prisma } from "../utils/prisma.js";
-import { z } from "zod";
 
 /* ============================================================
  * Helpers

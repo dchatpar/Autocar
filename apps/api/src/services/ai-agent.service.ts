@@ -12,6 +12,7 @@
  */
 
 import type { AgentRun, Prisma } from "@prisma/client";
+
 import { prisma } from "../utils/prisma.js";
 import { NotFoundError } from "../utils/errors.js";
 
@@ -268,7 +269,7 @@ async function runSAGE(
     const salePrice = deal.terms?.salePrice ?? 0;
 
     let riskLevel = "low";
-    let riskNotes: string[] = [];
+    const riskNotes: string[] = [];
 
     if (frontGross < 0) {
       riskLevel = "high";
@@ -351,7 +352,7 @@ async function runLUCAS(
       : null;
 
     let churnRisk: "low" | "medium" | "high" = "low";
-    let churnNotes: string[] = [];
+    const churnNotes: string[] = [];
 
     if (daysSinceContact !== null && daysSinceContact > 90) {
       churnRisk = "high";

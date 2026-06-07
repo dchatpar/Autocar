@@ -16,6 +16,7 @@
 import type { FastifyInstance, FastifyError, FastifyReply, FastifyRequest } from "fastify";
 import fp from "fastify-plugin";
 import { ZodError } from "zod";
+
 import { AppError } from "../utils/errors.js";
 
 interface ErrorResponseBody {

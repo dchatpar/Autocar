@@ -7,6 +7,7 @@
  */
 
 import type { Appointment, Prisma } from "@prisma/client";
+
 import { prisma as defaultPrisma } from "../utils/prisma.js";
 import {
   ConflictError,

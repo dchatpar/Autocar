@@ -33,6 +33,7 @@ import docusign from "docusign-esign";
 // Named-export alias so we can use the SDK's types as `docusign_esign.X`
 // instead of reaching for `any` or the default import as a namespace.
 import * as docusign_esign from "docusign-esign";
+
 import { ServerError } from "../../utils/errors.js";
 import {
   getAccessToken,
@@ -41,6 +42,7 @@ import {
   type DocuSignConfig,
 } from "./jwt-auth.js";
 import {
+  getTemplateBySlug,
   resolveDocuSignTemplateId,
   type TemplateDefinition,
 } from "./templates.js";
@@ -565,10 +567,6 @@ export function requireTemplate(slug: string): {
   cfg: DocuSignConfig;
 } {
   const cfg = loadDocuSignConfig();
-  // Lazy-import to keep the module order stable
-  const { getTemplateBySlug } = require("./templates.js") as {
-    getTemplateBySlug: (s: string) => TemplateDefinition;
-  };
   const definition = getTemplateBySlug(slug);
   const templateId = resolveDocuSignTemplateId(slug);
   return { definition, templateId, cfg };

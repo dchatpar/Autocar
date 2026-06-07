@@ -6,6 +6,7 @@
  */
 
 import type { User, UserRole } from "@prisma/client";
+
 import {
   ConflictError,
   ForbiddenError,

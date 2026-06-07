@@ -16,6 +16,8 @@
 
 import type { Prisma } from "@prisma/client";
 import { Prisma as PrismaNS } from "@prisma/client";
+import type { SubscriptionPlan } from "@prisma/client";
+
 import { prisma } from "../utils/prisma.js";
 import {
   capFor,
@@ -23,7 +25,6 @@ import {
   METERED_METRICS,
   type MeteredMetric,
 } from "./plan-limits.service.js";
-import type { SubscriptionPlan } from "@prisma/client";
 
 /**
  * Returns the inclusive start / exclusive end of the current

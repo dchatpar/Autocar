@@ -11,6 +11,7 @@
 
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { z } from "zod";
+
 import { prisma } from "../utils/prisma.js";
 import { validateBody, validateParams } from "../utils/validate.js";
 import { NotFoundError } from "../utils/errors.js";

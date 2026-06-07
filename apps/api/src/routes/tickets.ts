@@ -15,6 +15,8 @@
  */
 
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import type { UserRole } from "@prisma/client";
+
 import {
   CreateTicketBodySchema,
   UpdateTicketBodySchema,
@@ -25,7 +27,6 @@ import {
 } from "../schemas/ticket.schema.js";
 import { validateBody, validateParams, validateQuery } from "../utils/validate.js";
 import { ticketService } from "../services/ticket.service.js";
-import type { UserRole } from "@prisma/client";
 
 interface AccessPayload {
   userId: string;

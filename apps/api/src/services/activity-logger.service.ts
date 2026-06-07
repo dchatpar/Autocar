@@ -36,6 +36,7 @@
  */
 
 import type { Prisma, PrismaClient } from "@prisma/client";
+
 import { prisma as defaultPrisma } from "../utils/prisma.js";
 import type { RequestContext } from "../plugins/tenant.js";
 import { computeDiff, redactSnapshot, toSnapshot } from "../utils/diff.js";

@@ -6,6 +6,7 @@
  */
 
 import { CalendarEvent, CalendarEventType, Prisma } from "@prisma/client";
+
 import { prisma } from "../utils/prisma.js";
 import { NotFoundError } from "../utils/errors.js";
 

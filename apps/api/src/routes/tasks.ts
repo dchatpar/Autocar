@@ -15,6 +15,8 @@
  */
 
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import type { UserRole } from "@prisma/client";
+
 import {
   CreateTaskBodySchema,
   UpdateTaskBodySchema,
@@ -24,7 +26,6 @@ import {
 } from "../schemas/task.schema.js";
 import { validateBody, validateParams, validateQuery } from "../utils/validate.js";
 import { taskService } from "../services/task.service.js";
-import type { UserRole } from "@prisma/client";
 
 interface AccessPayload {
   userId: string;

@@ -19,6 +19,8 @@
  */
 
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import type { Prisma } from "@prisma/client";
+
 import { prisma } from "../utils/prisma.js";
 import { validateBody, validateParams, validateQuery } from "../utils/validate.js";
 import { leadScoreTriggers } from "../services/lead-score-triggers.service.js";
@@ -34,7 +36,6 @@ import {
   ScoreHistoryQuerySchema,
 } from "../schemas/lead-score.schema.js";
 import type { Classification } from "../services/lead-scorer.service.js";
-import type { Prisma } from "@prisma/client";
 
 /* ============================================================
  * Helpers

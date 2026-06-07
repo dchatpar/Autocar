@@ -9,6 +9,8 @@
  */
 
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import type { UserRole } from "@prisma/client";
+
 import {
   ListUsersQuerySchema,
   UpdateUserBodySchema,
@@ -16,7 +18,6 @@ import {
 } from "../schemas/auth.schema.js";
 import { validateBody, validateParams, validateQuery } from "../utils/validate.js";
 import { userService } from "../services/user.service.js";
-import type { UserRole } from "@prisma/client";
 
 interface AccessPayload {
   userId: string;

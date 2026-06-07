@@ -7,11 +7,12 @@
 
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import type { Prisma } from "@prisma/client";
+import type { UserRole } from "@prisma/client";
+
 import { UpdateDealerBodySchema } from "../schemas/auth.schema.js";
 import { validateBody } from "../utils/validate.js";
 import { dealerRepository } from "../repositories/dealer.repository.js";
 import { NotFoundError } from "../utils/errors.js";
-import type { UserRole } from "@prisma/client";
 
 interface AccessPayload {
   userId: string;

@@ -24,6 +24,7 @@
  */
 
 import type { PrismaClient } from "@prisma/client";
+
 import { prisma as defaultPrisma } from "../utils/prisma.js";
 import { realtimeService } from "../services/realtime.service.js";
 

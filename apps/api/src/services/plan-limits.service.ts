@@ -15,6 +15,7 @@
  */
 
 import type { SubscriptionPlan } from "@prisma/client";
+
 import { PaymentRequiredError } from "../utils/errors.js";
 
 /** All metered metrics the system tracks. */

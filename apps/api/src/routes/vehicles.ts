@@ -6,6 +6,7 @@
  */
 
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+
 import { prisma } from "../utils/prisma.js";
 
 function requireTenant(request: { tenant?: { dealerId: string } | null }): { dealerId: string } {

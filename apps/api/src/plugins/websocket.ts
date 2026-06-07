@@ -37,8 +37,9 @@ import type { FastifyInstance } from "fastify";
 import { Server as SocketIOServer } from "socket.io";
 import { createAdapter } from "@socket.io/redis-adapter";
 import IORedis, { type Redis } from "ioredis";
-import { verifyToken } from "../utils/jwt.js";
 import type { UserRole } from "@prisma/client";
+
+import { verifyToken } from "../utils/jwt.js";
 
 export interface SocketUserContext {
   userId: string;
