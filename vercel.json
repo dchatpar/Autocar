@@ -1,4 +1,4 @@
 {
-  "buildCommand": "cd apps/web && next build",
+  "buildCommand": "pnpm turbo build --filter=@dealeros/web",
   "installCommand": "cd apps/web && CI=true pnpm install --no-frozen-lockfile"
 }
