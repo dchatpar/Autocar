@@ -31,11 +31,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Build shared
-        run: pnpm turbo build --filter=@dealeros/shared
-
       - name: Run lint
-        run: pnpm --filter=@dealeros/web lint
+        run: pnpm --filter=@dealeros/web next lint
 
   typecheck:
     name: Type Check
