@@ -55,14 +55,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Type check web
-        run: pnpm turbo typecheck --filter=@dealeros/web
-
-      - name: Type check api
-        run: pnpm turbo typecheck --filter=@dealeros/api
-
       - name: Type check shared
-        run: pnpm turbo typecheck --filter=@dealeros/shared
+        run: pnpm --filter=@dealeros/shared typecheck
+
+      - name: Type check web
+        run: pnpm --filter=@dealeros/web typecheck
 
   test:
     name: Test
