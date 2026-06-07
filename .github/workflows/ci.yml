@@ -58,6 +58,9 @@ jobs:
       - name: Type check shared
         run: pnpm --filter=@dealeros/shared typecheck
 
+      - name: Build shared
+        run: pnpm --filter=@dealeros/shared build
+
       - name: Type check web
         run: pnpm --filter=@dealeros/web typecheck
 
