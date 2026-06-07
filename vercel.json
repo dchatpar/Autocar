@@ -1,6 +1,4 @@
 {
-  "rootDirectory": "apps/web",
-  "framework": "nextjs",
-  "installCommand": "CI=true pnpm install --no-frozen-lockfile",
-  "buildCommand": "pnpm --filter=@dealeros/shared build && pnpm --filter=@dealeros/web build"
+  "buildCommand": "cd apps/web && next build",
+  "installCommand": "cd apps/web && CI=true pnpm install --no-frozen-lockfile"
 }
