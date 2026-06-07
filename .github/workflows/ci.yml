@@ -118,8 +118,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Build all apps
-        run: pnpm build
+      - name: Build shared
+        run: pnpm --filter=@dealeros/shared build
+
+      - name: Build api
+        run: pnpm --filter=@dealeros/api build
+
+      - name: Build web
+        run: pnpm --filter=@dealeros/web build
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
