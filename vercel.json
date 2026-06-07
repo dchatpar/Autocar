@@ -1,5 +1,0 @@
-{
-  "buildCommand": "pnpm turbo build --filter=@dealeros/web",
-  "installCommand": "cd apps/web && CI=true pnpm install --no-frozen-lockfile",
-  "outputDirectory": "apps/web/.next"
-}
