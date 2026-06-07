@@ -1,5 +1,5 @@
 {
   "framework": "nextjs",
-  "installCommand": "cd .. && CI=true pnpm install --no-frozen-lockfile",
-  "buildCommand": "cd .. && pnpm turbo build --filter=@dealeros/web"
+  "installCommand": "CI=true pnpm install --no-frozen-lockfile",
+  "buildCommand": "pnpm turbo build --filter=@dealeros/web"
 }
