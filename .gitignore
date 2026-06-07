@@ -66,3 +66,6 @@ infra/terraform.tfvars
 .cache/
 
 .vercel
+
+# pnpm lockfiles — only the root one is valid for monorepos
+**/pnpm-lock.yaml
